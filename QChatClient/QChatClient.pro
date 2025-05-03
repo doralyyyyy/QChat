@@ -1,5 +1,7 @@
 QT       += core gui
 QT       += network
+QT       += sql
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -10,11 +12,13 @@ CONFIG += c++17
 TEMPLATE = app
 
 SOURCES += \
+    DatabaseManager.cpp \
     client.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    DatabaseManager.h \
     client.h \
     mainwindow.h
 

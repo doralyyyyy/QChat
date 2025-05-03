@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QObject>
 #include <QString>
+#include "DatabaseManager.h"
 
 class MainWindow;
 
@@ -26,6 +27,7 @@ private:
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
     MainWindow *mainWindow;
+    DatabaseManager *db;      // 操纵数据库
 };
 
 #endif

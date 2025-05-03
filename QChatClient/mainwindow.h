@@ -36,5 +36,6 @@ private:
     QLineEdit *inputField;
     QPushButton *sendButton;
     Client* client;
+    DatabaseManager dbManager;
 };
 #endif

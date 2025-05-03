@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QObject>
 #include <QString>
+#include "DatabaseManager.h"
 
 class MainWindow;
 
@@ -26,6 +27,7 @@ private:
     QTcpServer *server;       // 监听端口的服务器
     QTcpSocket *clientSocket; // 与客户端的连接
     MainWindow *mainWindow;
+    DatabaseManager *db;      // 操纵数据库
 };
 
 #endif

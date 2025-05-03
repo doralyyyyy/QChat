@@ -8,8 +8,9 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWidget>
-#include <QApplication>
+#include <QTextEdit>
 #include "server.h"
+#include "DatabaseManager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,10 +23,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    void extracted(QVector<QString> &msgs);
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void updateMessage(const QString& message);
+    void updateMessage(const QString &message);
 
 private slots:
     void onSendButtonClicked();
@@ -35,6 +37,7 @@ private:
     QTextEdit *textEdit;
     QLineEdit *inputField;
     QPushButton *sendButton;
-    Server* server;
+    Server *server;
+    DatabaseManager dbManager;
 };
 #endif

@@ -34,6 +34,12 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     server = new Server(1145,this);
 
     connect(sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
+    connect(inputField, &QLineEdit::returnPressed, this, &MainWindow::onSendButtonClicked);
+
+    QVector<QString> msgs=dbManager.loadMessages();       //恢复历史记录
+    for(const QString &line:std::as_const(msgs)) {
+        textEdit->append(line);
+    }
 }
 
 MainWindow::~MainWindow()
