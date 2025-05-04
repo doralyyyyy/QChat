@@ -5,7 +5,12 @@
 #include <QByteArray>
 #include <QObject>
 #include <QString>
-#include "DatabaseManager.h"
+#include <QDebug>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QFile>
+#include <QFileInfo>
+#include "database_manager.h"
 
 class MainWindow;
 
@@ -15,7 +20,19 @@ public:
     explicit Client(const QString &host, quint16 port, MainWindow *mainWindow, QObject *parent = nullptr);
     ~Client();
 
+    struct FileInfo {
+        QString name;
+        QByteArray data;
+        int expectedSize=0;
+        bool receiving=false;
+        bool headerReceived=false;
+    };
+    QMap<QTcpSocket*, FileInfo> fileMap;
+
     void sendMessage(const QString &message);
+    void sendFile(const QString &filePath);
+    void handleTextMessage(const QByteArray& data);
+    void tryFinishFile(QTcpSocket* s);
 
 private slots:
     void onConnected();   // 客户端连接成功时的槽
@@ -27,7 +44,7 @@ private:
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
     MainWindow *mainWindow;
-    DatabaseManager *db;      // 操纵数据库
+    DatabaseManager *dbManager;      // 操纵数据库
 };
 
 #endif

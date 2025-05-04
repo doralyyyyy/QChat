@@ -6,7 +6,11 @@
 #include <QByteArray>
 #include <QObject>
 #include <QString>
-#include "DatabaseManager.h"
+#include <QDebug>
+#include <QDateTime>
+#include <QFile>
+#include <QDir>
+#include "database_manager.h"
 
 class MainWindow;
 
@@ -16,7 +20,19 @@ public:
     explicit Server(quint16 port,MainWindow *mainWindow, QObject *parent = nullptr);
     ~Server();
 
+    struct FileInfo {
+        QString name;
+        QByteArray data;
+        int expectedSize=0;
+        bool receiving=false;
+        bool headerReceived=false;
+    };
+    QMap<QTcpSocket*, FileInfo> fileMap;
+
     void sendMessage(const QString &message);
+    void sendFile(const QString &filePath);
+    void handleTextMessage(const QByteArray& data);
+    void tryFinishFile(QTcpSocket* s);
 
 private slots:
     void onNewConnection();  // 新连接建立时的槽
@@ -25,9 +41,10 @@ private slots:
 
 private:
     QTcpServer *server;       // 监听端口的服务器
-    QTcpSocket *clientSocket; // 与客户端的连接
+    QTcpSocket *socket;       // 与客户端的连接
     MainWindow *mainWindow;
-    DatabaseManager *db;      // 操纵数据库
+    DatabaseManager *dbManager;      // 操纵数据库
+
 };
 
 #endif
