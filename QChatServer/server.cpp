@@ -1,0 +1,186 @@
+#include "server.h"
+#include "main_window.h"
+
+Server::Server(quint16 port,MainWindow *mainWindow, QObject *parent)
+    : QObject(parent), socket(nullptr),mainWindow(mainWindow) {
+    server = new QTcpServer(this);
+    dbManager = new DatabaseManager;
+    if (!server->listen(QHostAddress::Any, port)) {
+        mainWindow->updateMessage("服务器无法启动");
+    }
+    else {
+        mainWindow->updateMessage("服务器已启动并监听端口："+QString::number(port));
+    };
+    connect(server, &QTcpServer::newConnection, this, &Server::onNewConnection);
+}
+
+Server::~Server() {
+    if (socket) {
+        socket->close();
+    }
+    server->close();
+}
+
+void Server::onNewConnection() {
+    socket = server->nextPendingConnection();
+    connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);
+    connect(socket, &QTcpSocket::disconnected, this, &Server::onDisconnected);
+    mainWindow->updateMessage("客户端已连接");
+}
+
+void Server::sendMessage(const QString &message) {
+    if (socket&&socket->state() == QTcpSocket::ConnectedState) {
+        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        socket->write(message.toUtf8());
+        socket->flush();        //确保消息被立即发送
+        mainWindow->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
+        dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
+    }
+}
+
+void Server::sendFile(const QString& filePath) {
+    QFile file(filePath);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray fileData = file.readAll();
+        QString filename = QFileInfo(file).fileName();
+        QString savedPath = QCoreApplication::applicationDirPath() + "/sent_" + filename;
+
+        socket->write(("FILE:" + filename + ":" + QString::number(fileData.size()) + "\n").toUtf8());
+        socket->write(fileData);
+        socket->flush();
+        file.close();
+
+        // 自己保存一份文件
+        QFile out(savedPath);
+        if (out.open(QIODevice::WriteOnly)) {
+            out.write(fileData);
+            out.close();
+
+            QString content="FILE|"+filename;
+            QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+            mainWindow->updateMessage("[" + time + "] 我：" + content);
+            dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
+        } else {
+            mainWindow->updateMessage("文件保存失败：" + filename);
+        }
+    }
+}
+
+void Server::onReadyRead() {
+    QTcpSocket* s=qobject_cast<QTcpSocket*>(sender());
+    QByteArray d=s->readAll();
+    FileInfo& f=fileMap[s];
+
+    if (!f.receiving) {
+        if (d.startsWith("FILE:")) {
+            int idx=d.indexOf('\n');
+            if (idx==-1) return;
+
+            QList<QByteArray> parts=d.left(idx).mid(5).split(':');
+            if (parts.size()!=2) return;
+
+            f.name=QString::fromUtf8(parts[0]);
+            f.expectedSize=parts[1].toInt();
+            f.data=d.mid(idx+1);
+            f.receiving=true;
+            f.headerReceived=true;
+            tryFinishFile(s);
+        } else {
+            handleTextMessage(d);
+        }
+    } else {
+        f.data+=d;
+        tryFinishFile(s);
+    }
+}
+
+void Server::tryFinishFile(QTcpSocket* s) {               // 由于文件较大，可能要多次获取
+    FileInfo& f=fileMap[s];
+    if (f.receiving && f.headerReceived && f.data.size() >= f.expectedSize) {
+        QFile file(QCoreApplication::applicationDirPath() + "/received_" + f.name);
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(f.data.left(f.expectedSize));
+            file.close();
+
+            QString content="FILE|"+f.name;
+            QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+            mainWindow->updateMessage("[" + time + "] 对方：" + content);
+            dbManager->insertMessage("对方","我",content,time);     // 标记为文件后存入数据库
+        } else {
+            mainWindow->updateMessage("文件保存失败：" + f.name);
+        }
+        fileMap.remove(s);
+    }
+}
+
+void Server::handleTextMessage(const QByteArray& data) {       // 处理传入文本
+    QString message = QString::fromUtf8(data).trimmed();
+
+    if (message.startsWith("EMAIL:")) {                // 收到的是验证用邮件时
+        QString email = message.mid(QString("EMAIL:").length()).trimmed();
+        QString code = generateCode();
+        sendVerificationCodeBack(code);
+        sendVerificationCode(email, code);
+    } else {
+        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        mainWindow->updateMessage("[" + time + "] 对方：" + message);
+        dbManager->insertMessage("对方", "我", message, time);
+    }
+}
+
+QString Server::generateCode() {      // 随机生成六位数验证码
+    QString code;
+    for (int i=0;i<6;++i) code += QChar('0'+rand()%10);
+    return code;
+}
+
+void Server::sendVerificationCode(const QString &email, const QString &code) {     // 把验证码发到邮箱
+    QProcess *p=new QProcess(this);
+
+    // 设置环境变量，确保 Python 输出支持 UTF-8
+    QProcessEnvironment env=QProcessEnvironment::systemEnvironment();
+    env.insert("PYTHONIOENCODING","utf-8");
+    p->setProcessEnvironment(env);
+
+    // 设置 Python 程序与参数
+    QString python="python";
+    QString scriptPath=QCoreApplication::applicationDirPath()+"/send_email.py";   // python程序与数据库同在Debug的debug中
+
+    QStringList args;
+    args<<scriptPath<<email<<code;
+
+    p->setProgram(python);
+    p->setArguments(args);
+    p->setProcessChannelMode(QProcess::MergedChannels); // 合并标准输出与错误输出
+
+    connect(p,&QProcess::readyReadStandardOutput,[=](){
+        QByteArray out=p->readAllStandardOutput();
+        qDebug()<<"标准输出:"<<QString::fromUtf8(out);
+    });
+
+    connect(p,&QProcess::readyReadStandardError,[=](){
+        QByteArray err=p->readAllStandardError();
+        qDebug()<<"错误输出:"<<QString::fromUtf8(err);
+    });
+
+    p->start();
+
+    if (!p->waitForStarted()) {
+        qDebug()<<"Python 子进程启动失败";
+    } else {
+        qDebug()<<"验证码已尝试发送至"<<email<<"，内容为"<<code;
+    }
+}
+
+void Server::sendVerificationCodeBack(const QString &code) {   // 把验证码发回客户端
+    if (socket&&socket->state() == QTcpSocket::ConnectedState) {
+        QString msg  = "CODE:" + code + "\n";
+        socket->write(msg.toUtf8());
+        socket->flush();        //确保消息被立即发送
+    }
+}
+
+void Server::onDisconnected() {
+    mainWindow->updateMessage("客户端断开连接");
+    socket->deleteLater();
+}
