@@ -10,6 +10,8 @@
 #include <QDateTime>
 #include <QFile>
 #include <QDir>
+#include <QtGlobal>
+#include <QProcess>
 #include "database_manager.h"
 
 class MainWindow;
@@ -29,10 +31,13 @@ public:
     };
     QMap<QTcpSocket*, FileInfo> fileMap;
 
+    void sendVerificationCode(const QString &email, const QString &code);
+    void sendVerificationCodeBack(const QString &code);
     void sendMessage(const QString &message);
     void sendFile(const QString &filePath);
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
+    QString generateCode();
 
 private slots:
     void onNewConnection();  // 新连接建立时的槽

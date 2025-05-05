@@ -15,12 +15,14 @@ SOURCES += \
     client.cpp \
     database_manager.cpp \
     main.cpp \
-    main_window.cpp
+    main_window.cpp \
+    register_window.cpp
 
 HEADERS += \
     client.h \
     database_manager.h \
-    main_window.h
+    main_window.h \
+    register_window.h
 
 FORMS += \
     main_window.ui

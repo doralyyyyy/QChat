@@ -94,7 +94,7 @@ void Server::onReadyRead() {
     }
 }
 
-void Server::tryFinishFile(QTcpSocket* s) {
+void Server::tryFinishFile(QTcpSocket* s) {               // 由于文件较大，可能要多次获取
     FileInfo& f=fileMap[s];
     if (f.receiving && f.headerReceived && f.data.size() >= f.expectedSize) {
         QFile file(QCoreApplication::applicationDirPath() + "/received_" + f.name);
@@ -113,11 +113,71 @@ void Server::tryFinishFile(QTcpSocket* s) {
     }
 }
 
-void Server::handleTextMessage(const QByteArray& data) {
-    QString message = QString::fromUtf8(data);
-    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    mainWindow->updateMessage("[" + time + "] 对方：" + message);
-    dbManager->insertMessage("对方", "我", message, time);
+void Server::handleTextMessage(const QByteArray& data) {       // 处理传入文本
+    QString message = QString::fromUtf8(data).trimmed();
+
+    if (message.startsWith("EMAIL:")) {                // 收到的是验证用邮件时
+        QString email = message.mid(QString("EMAIL:").length()).trimmed();
+        QString code = generateCode();
+        sendVerificationCodeBack(code);
+        sendVerificationCode(email, code);
+    } else {
+        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        mainWindow->updateMessage("[" + time + "] 对方：" + message);
+        dbManager->insertMessage("对方", "我", message, time);
+    }
+}
+
+QString Server::generateCode() {      // 随机生成六位数验证码
+    QString code;
+    for (int i=0;i<6;++i) code += QChar('0'+rand()%10);
+    return code;
+}
+
+void Server::sendVerificationCode(const QString &email, const QString &code) {     // 把验证码发到邮箱
+    QProcess *p=new QProcess(this);
+
+    // 设置环境变量，确保 Python 输出支持 UTF-8
+    QProcessEnvironment env=QProcessEnvironment::systemEnvironment();
+    env.insert("PYTHONIOENCODING","utf-8");
+    p->setProcessEnvironment(env);
+
+    // 设置 Python 程序与参数
+    QString python="python";
+    QString scriptPath=QCoreApplication::applicationDirPath()+"/send_email.py";   // python程序与数据库同在Debug的debug中
+
+    QStringList args;
+    args<<scriptPath<<email<<code;
+
+    p->setProgram(python);
+    p->setArguments(args);
+    p->setProcessChannelMode(QProcess::MergedChannels); // 合并标准输出与错误输出
+
+    connect(p,&QProcess::readyReadStandardOutput,[=](){
+        QByteArray out=p->readAllStandardOutput();
+        qDebug()<<"标准输出:"<<QString::fromUtf8(out);
+    });
+
+    connect(p,&QProcess::readyReadStandardError,[=](){
+        QByteArray err=p->readAllStandardError();
+        qDebug()<<"错误输出:"<<QString::fromUtf8(err);
+    });
+
+    p->start();
+
+    if (!p->waitForStarted()) {
+        qDebug()<<"Python 子进程启动失败";
+    } else {
+        qDebug()<<"验证码已尝试发送至"<<email<<"，内容为"<<code;
+    }
+}
+
+void Server::sendVerificationCodeBack(const QString &code) {   // 把验证码发回客户端
+    if (socket&&socket->state() == QTcpSocket::ConnectedState) {
+        QString msg  = "CODE:" + code + "\n";
+        socket->write(msg.toUtf8());
+        socket->flush();        //确保消息被立即发送
+    }
 }
 
 void Server::onDisconnected() {

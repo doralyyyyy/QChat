@@ -42,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     for (const QString &line : std::as_const(msgs)) {
         updateMessage(line);
     }
-
 }
 
 MainWindow::~MainWindow() {

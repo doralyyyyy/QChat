@@ -1,8 +1,9 @@
 #include "client.h"
 #include "main_window.h"
+#include "register_window.h"
 
-Client::Client(const QString &host, quint16 port, MainWindow *mainWindow, QObject *parent)
-    : QObject(parent), serverHost(host), serverPort(port), mainWindow(mainWindow) {
+Client::Client(const QString &host, quint16 port, RegisterWindow *registerWindow, QObject *parent)
+    : QObject(parent), mainWindow(nullptr), serverHost(host), serverPort(port), registerWindow(registerWindow) {
     socket = new QTcpSocket(this);
     dbManager = new DatabaseManager;
     connect(socket, &QTcpSocket::connected, this, &Client::onConnected);
@@ -13,10 +14,29 @@ Client::~Client() {
     socket->close();
 }
 
+void Client::showMessage(const QString &s) {
+    QMessageBox msgBox;
+    msgBox.setText(s);
+    msgBox.exec();
+}
+
 void Client::onConnected() {
     connect(socket, &QTcpSocket::readyRead, this, &Client::onReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Client::onDisconnected);
-    mainWindow->updateMessage("已连接到服务器");
+}
+
+void Client::sendVerificationEmail(const QString& email) {
+    if (socket && socket->isOpen()) {
+        QString msg = "EMAIL:" + email + "\n";
+        socket->write(msg.toUtf8());
+        socket->flush();
+    }
+}
+
+void Client::verificationSuccess(){     // 通过验证后进入聊天界面
+    registerWindow->close();
+    mainWindow = new MainWindow(this);
+    mainWindow->show();
 }
 
 void Client::sendMessage(const QString &message) {
@@ -105,12 +125,17 @@ void Client::tryFinishFile(QTcpSocket* s) {
 }
 
 void Client::handleTextMessage(const QByteArray& data) {
-    QString message = QString::fromUtf8(data);
-    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    mainWindow->updateMessage("[" + time + "] 对方：" + message);
-    dbManager->insertMessage("对方", "我", message, time);
+    QString message = QString::fromUtf8(data).trimmed();
+
+    if (message.startsWith("CODE:")) {                // 收到的是验证码时
+        code = message.mid(QString("CODE:").length()).trimmed();
+    } else {
+        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        mainWindow->updateMessage("[" + time + "] 对方：" + message);
+        dbManager->insertMessage("对方", "我", message, time);
+    }
 }
 
 void Client::onDisconnected() {
-    mainWindow->updateMessage("与服务器断开连接");
+    showMessage("与服务器断开连接");
 }

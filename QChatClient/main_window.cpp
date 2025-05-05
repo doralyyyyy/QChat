@@ -1,7 +1,7 @@
 #include "main_window.h"
 #include "ui_main_window.h"
 
-MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow), client(client)
 {
     ui->setupUi(this);
 
@@ -31,9 +31,6 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
-
-    // 启动客户端，主机为本机，连接 1145 端口
-    client = new Client("10.7.54.26", 1145, this);
 
     connect(inputField, &QLineEdit::returnPressed, this, &MainWindow::onSendButtonClicked);
     connect(sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);

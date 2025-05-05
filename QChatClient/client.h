@@ -10,14 +10,16 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QFileInfo>
+#include <QMessageBox>
 #include "database_manager.h"
 
 class MainWindow;
+class RegisterWindow;
 
 class Client : public QObject {
     Q_OBJECT
 public:
-    explicit Client(const QString &host, quint16 port, MainWindow *mainWindow, QObject *parent = nullptr);
+    explicit Client(const QString &host, quint16 port, RegisterWindow *registerWindow = nullptr, QObject *parent = nullptr);
     ~Client();
 
     struct FileInfo {
@@ -28,11 +30,17 @@ public:
         bool headerReceived=false;
     };
     QMap<QTcpSocket*, FileInfo> fileMap;
+    QString code;          // 验证码
+    MainWindow *mainWindow;
 
+    void sendVerificationEmail(const QString& email);
+    void sendVerificationCode(const QString& code);
+    void verificationSuccess();
     void sendMessage(const QString &message);
     void sendFile(const QString &filePath);
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
+    void showMessage(const QString &message);    // 弹出提示框
 
 private slots:
     void onConnected();   // 客户端连接成功时的槽
@@ -43,7 +51,7 @@ private:
     QTcpSocket *socket;  // 与服务端的连接
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
-    MainWindow *mainWindow;
+    RegisterWindow *registerWindow;
     DatabaseManager *dbManager;      // 操纵数据库
 };
 

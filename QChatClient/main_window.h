@@ -31,7 +31,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(Client *client, QWidget *parent = nullptr);
     ~MainWindow();
 
     void updateMessage(const QString &message);
