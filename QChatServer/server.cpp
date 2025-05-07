@@ -5,6 +5,7 @@ Server::Server(quint16 port,MainWindow *mainWindow, QObject *parent)
     : QObject(parent), socket(nullptr),mainWindow(mainWindow) {
     server = new QTcpServer(this);
     dbManager = new DatabaseManager;
+    userDB = new UserAuthDatabaseManager;
     if (!server->listen(QHostAddress::Any, port)) {
         mainWindow->updateMessage("服务器无法启动");
     }
@@ -75,10 +76,8 @@ void Server::onReadyRead() {
         if (d.startsWith("FILE:")) {
             int idx=d.indexOf('\n');
             if (idx==-1) return;
-
             QList<QByteArray> parts=d.left(idx).mid(5).split(':');
             if (parts.size()!=2) return;
-
             f.name=QString::fromUtf8(parts[0]);
             f.expectedSize=parts[1].toInt();
             f.data=d.mid(idx+1);
@@ -86,15 +85,72 @@ void Server::onReadyRead() {
             f.headerReceived=true;
             tryFinishFile(s);
         } else {
-            handleTextMessage(d);
+            handleTextMessage(s, d);
         }
-    } else {
+    } else {        // 文件可能较大，要多次获取
         f.data+=d;
         tryFinishFile(s);
     }
 }
 
-void Server::tryFinishFile(QTcpSocket* s) {               // 由于文件较大，可能要多次获取
+void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
+    QString msg=QString::fromUtf8(data).trimmed();
+
+    if (msg.startsWith("EMAIL:")) {                    // 收到注册时的邮件
+        QString email=msg.mid(6).trimmed();
+        QString code=generateCode();
+        sendVerificationCodeBack(code);
+        sendVerificationCode(email, code);
+    } else if (msg.startsWith("EMAIL_LOGIN:")) {       // 收到邮件-验证码登录的邮件
+        QString email = msg.mid(12).trimmed();
+        if (!userDB->emailExists(email)) {
+            socket->write("EMAIL_NOTFOUND");           // 告诉客户端邮箱不存在
+            return;
+        }
+        QString code = generateCode();
+        sendVerificationCodeBack(code);
+        sendVerificationCode(email, code);
+    } else if (msg.startsWith("REGISTER:")) {          // 收到注册消息
+        QStringList parts=msg.mid(9).split('|');
+        if (parts.size()!=4) {
+            socket->write("REGISTER_FAIL");
+            return;
+        }
+
+        QString nick=parts[0], pwd=parts[1], email=parts[2];
+
+        if (userDB->nicknameExists(nick) || userDB->emailExists(email)) {
+            socket->write("REGISTER_DUPLICATE");
+            return;
+        }
+        if (userDB->addUser(nick, pwd, email)) {
+            socket->write("REGISTER_OK");
+        } else {
+            socket->write("REGISTER_FAIL");
+        }
+    } else if (msg.startsWith("LOGIN:")) {           // 收到登录消息
+        QStringList parts=msg.mid(6).split('|');
+        if (parts.size()!=2) {
+            socket->write("LOGIN_FAIL");
+            return;
+        }
+
+        QString id=parts[0], pwd=parts[1];
+        if (userDB->checkLogin(id, pwd)) {
+            socket->write("LOGIN_OK");
+        } else if (!userDB->nicknameExists(id)&&!userDB->emailExists(id)) {
+            socket->write("LOGIN_NOTFOUND");
+        } else {
+            socket->write("LOGIN_FAIL");
+        }
+    } else {
+        QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        mainWindow->updateMessage("[" + time + "] 对方：" + msg);
+        dbManager->insertMessage("对方", "我", msg, time);
+    }
+}
+
+void Server::tryFinishFile(QTcpSocket* s) {               // 先判断文件获取是否结束，若结束，进行后处理
     FileInfo& f=fileMap[s];
     if (f.receiving && f.headerReceived && f.data.size() >= f.expectedSize) {
         QFile file(QCoreApplication::applicationDirPath() + "/received_" + f.name);
@@ -110,21 +166,6 @@ void Server::tryFinishFile(QTcpSocket* s) {               // 由于文件较大�
             mainWindow->updateMessage("文件保存失败：" + f.name);
         }
         fileMap.remove(s);
-    }
-}
-
-void Server::handleTextMessage(const QByteArray& data) {       // 处理传入文本
-    QString message = QString::fromUtf8(data).trimmed();
-
-    if (message.startsWith("EMAIL:")) {                // 收到的是验证用邮件时
-        QString email = message.mid(QString("EMAIL:").length()).trimmed();
-        QString code = generateCode();
-        sendVerificationCodeBack(code);
-        sendVerificationCode(email, code);
-    } else {
-        QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-        mainWindow->updateMessage("[" + time + "] 对方：" + message);
-        dbManager->insertMessage("对方", "我", message, time);
     }
 }
 

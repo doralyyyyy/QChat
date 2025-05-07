@@ -15,12 +15,16 @@ SOURCES += \
     database_manager.cpp \
     main.cpp \
     main_window.cpp \
-    server.cpp
+    message_search_widget.cpp \
+    server.cpp \
+    user_auth_database_manager.cpp
 
 HEADERS += \
     database_manager.h \
     main_window.h \
-    server.h
+    message_search_widget.h \
+    server.h \
+    user_auth_database_manager.h
 
 FORMS += \
     main_window.ui

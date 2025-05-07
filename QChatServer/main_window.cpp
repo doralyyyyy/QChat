@@ -15,6 +15,10 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     sendButton = new QPushButton("发送", this);
     sendFileButton = new QPushButton("发送文件", this);
 
+    // 创建搜索框（提前隐藏）和搜索按钮
+    searchWidget=new MessageSearchWidget(listWidget,this);
+    searchButton=new QPushButton("搜索",this);
+
     // 创建水平布局，将按钮放到右侧
     QHBoxLayout *inputLayout = new QHBoxLayout;
     inputLayout->addWidget(inputField);
@@ -25,18 +29,23 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(listWidget);
     mainLayout->addLayout(inputLayout);
+    mainLayout->insertWidget(0,searchWidget);
+    mainLayout->insertWidget(0,searchButton,0,Qt::AlignRight);
+    mainLayout->insertWidget(1,searchWidget);
 
     // 创建 centralWidget，设置布局
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
 
-    // 启动服务器，并监听1145端口
-    server = new Server(1145, this);
-
     connect(inputField, &QLineEdit::returnPressed, this, &MainWindow::onSendButtonClicked);
     connect(sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
     connect(sendFileButton, &QPushButton::clicked, this, &MainWindow::onSendFileButtonClicked);
+    connect(searchButton,&QPushButton::clicked,this,[=](){
+        searchWidget->activate();
+    });
+
+    server = new Server(11455, this);    // 启动服务器，并监听11455端口
 
     QVector<QString> msgs = dbManager.loadMessages();
     for (const QString &line : std::as_const(msgs)) {
@@ -86,13 +95,15 @@ void MainWindow::updateMessage(const QString &msg) {      // 将文本/文件显
         item->setSizeHint(QSize(0, 40));
         listWidget->addItem(item);
     }
+
+    listWidget->scrollToBottom();     // 始终滚动到最底部
 }
 
 void MainWindow::onSendButtonClicked() {
-    QString message = inputField->text();
+    QString message = inputField->text();  // 获取输入框中的文本
     if (!message.isEmpty()) {
         server->sendMessage(message);
-        inputField->clear();
+        inputField->clear();    // 清空输入框
     }
 }
 

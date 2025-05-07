@@ -1,8 +1,7 @@
 #include "database_manager.h"
 
 DatabaseManager::DatabaseManager() {
-    // 确保只创建一个连接
-    if (QSqlDatabase::contains("ChatConnection")) {
+    if (QSqlDatabase::contains("ChatConnection")) {    // 确保只创建一个连接
         db = QSqlDatabase::database("ChatConnection");
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE", "ChatConnection");
@@ -16,11 +15,7 @@ DatabaseManager::DatabaseManager() {
 void DatabaseManager::init() {
     if (db.isOpen()) {
         QSqlQuery q(db);
-        q.exec("CREATE TABLE IF NOT EXISTS messages("
-               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-               "sender TEXT, receiver TEXT,"
-               "message TEXT,"
-               "timestamp TEXT)");
+        q.exec("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,sender TEXT, receiver TEXT,message TEXT,timestamp TEXT)");
     }
 }
 

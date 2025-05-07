@@ -13,6 +13,7 @@
 #include <QtGlobal>
 #include <QProcess>
 #include "database_manager.h"
+#include "user_auth_database_manager.h"
 
 class MainWindow;
 
@@ -35,7 +36,7 @@ public:
     void sendVerificationCodeBack(const QString &code);
     void sendMessage(const QString &message);
     void sendFile(const QString &filePath);
-    void handleTextMessage(const QByteArray& data);
+    void handleTextMessage(QTcpSocket *socket, const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
     QString generateCode();
 
@@ -48,7 +49,8 @@ private:
     QTcpServer *server;       // 监听端口的服务器
     QTcpSocket *socket;       // 与客户端的连接
     MainWindow *mainWindow;
-    DatabaseManager *dbManager;      // 操纵数据库
+    DatabaseManager *dbManager;      // 聊天记录数据库
+    UserAuthDatabaseManager *userDB;   // 用户数据库
 
 };
 
