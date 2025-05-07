@@ -1,9 +1,11 @@
 #include "client.h"
 #include "main_window.h"
 #include "register_window.h"
+#include "login_window.h"
+#include "email_login_window.h"
 
-Client::Client(const QString &host, quint16 port, RegisterWindow *registerWindow, QObject *parent)
-    : QObject(parent), mainWindow(nullptr), serverHost(host), serverPort(port), registerWindow(registerWindow) {
+Client::Client(const QString &host, quint16 port, LoginWindow *loginWindow, QObject *parent)
+    : QObject(parent), mainWindow(nullptr), serverHost(host), serverPort(port), loginWindow(loginWindow) {
     socket = new QTcpSocket(this);
     dbManager = new DatabaseManager;
     connect(socket, &QTcpSocket::connected, this, &Client::onConnected);
@@ -33,8 +35,20 @@ void Client::sendVerificationEmail(const QString& email) {
     }
 }
 
-void Client::verificationSuccess(){     // 通过验证后进入聊天界面
+void Client::registerSuccess(){     // 注册通过验证
     registerWindow->close();
+    mainWindow = new MainWindow(this);
+    mainWindow->show();
+}
+
+void Client::loginSuccess(){       // 账号密码登录通过验证
+    loginWindow->close();
+    mainWindow = new MainWindow(this);
+    mainWindow->show();
+}
+
+void Client::emailLoginSuccess(){   // 邮箱验证码登录通过验证
+    emailLoginWindow->close();
     mainWindow = new MainWindow(this);
     mainWindow->show();
 }
@@ -46,6 +60,13 @@ void Client::sendMessage(const QString &message) {
         socket->flush();        //确保消息被立即发送
         mainWindow->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
         dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
+    }
+}
+
+void Client::sendNonTextMessage(const QString &message) {    // 发送无需被显示的消息
+    if (socket->state() == QTcpSocket::ConnectedState) {
+        socket->write(message.toUtf8());
+        socket->flush();        //确保消息被立即发送
     }
 }
 
@@ -61,8 +82,7 @@ void Client::sendFile(const QString& filePath) {
         socket->flush();
         file.close();
 
-        // 自己保存一份文件
-        QFile out(savedPath);
+        QFile out(savedPath);      // 自己保存一份文件
         if (out.open(QIODevice::WriteOnly)) {
             out.write(fileData);
             out.close();
@@ -125,14 +145,29 @@ void Client::tryFinishFile(QTcpSocket* s) {
 }
 
 void Client::handleTextMessage(const QByteArray& data) {
-    QString message = QString::fromUtf8(data).trimmed();
+    QString msg = QString::fromUtf8(data).trimmed();
 
-    if (message.startsWith("CODE:")) {                // 收到的是验证码时
-        code = message.mid(QString("CODE:").length()).trimmed();
+    if (msg=="REGISTER_OK") {                              // 收到注册反馈时
+        registerSuccess();
+    } else if (msg=="REGISTER_FAIL") {
+        QMessageBox::warning(nullptr,"注册失败","注册失败，请重试");
+    } else if (msg=="REGISTER_DUPLICATE") {
+        QMessageBox::warning(nullptr,"注册失败","昵称或邮箱已被使用");
+    } else if (msg=="LOGIN_OK") {                          // 收到登录反馈时
+        loginSuccess();
+    } else if (msg=="LOGIN_NOTFOUND") {
+        QMessageBox::warning(nullptr,"登录失败","该昵称/邮箱不存在");
+    } else if (msg=="LOGIN_FAIL") {
+        QMessageBox::warning(nullptr,"登录失败","密码错误");
+    } else if (msg.startsWith("CODE:")) {                    // 收到的是验证码时
+        QMessageBox::information(nullptr, "提示", "验证码已发送至："+nowEmail);
+        code = msg.mid(5).trimmed();
+    } else if (msg == "EMAIL_NOTFOUND") {                        // 收到邮箱验证码登录反馈时
+        QMessageBox::warning(nullptr, "错误", "该邮箱尚未注册！");
     } else {
         QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-        mainWindow->updateMessage("[" + time + "] 对方：" + message);
-        dbManager->insertMessage("对方", "我", message, time);
+        mainWindow->updateMessage("[" + time + "] 对方：" + msg);
+        dbManager->insertMessage("对方", "我", msg, time);
     }
 }
 

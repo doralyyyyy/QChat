@@ -15,11 +15,13 @@
 
 class MainWindow;
 class RegisterWindow;
+class LoginWindow;
+class EmailLoginWindow;
 
 class Client : public QObject {
     Q_OBJECT
 public:
-    explicit Client(const QString &host, quint16 port, RegisterWindow *registerWindow = nullptr, QObject *parent = nullptr);
+    explicit Client(const QString &host, quint16 port, LoginWindow *loginWindow = nullptr, QObject *parent = nullptr);
     ~Client();
 
     struct FileInfo {
@@ -31,12 +33,18 @@ public:
     };
     QMap<QTcpSocket*, FileInfo> fileMap;
     QString code;          // 验证码
+    QString nowEmail;      // 邮箱
     MainWindow *mainWindow;
+    RegisterWindow *registerWindow;
+    EmailLoginWindow *emailLoginWindow;
 
     void sendVerificationEmail(const QString& email);
     void sendVerificationCode(const QString& code);
-    void verificationSuccess();
+    void registerSuccess();
+    void loginSuccess();
+    void emailLoginSuccess();
     void sendMessage(const QString &message);
+    void sendNonTextMessage(const QString &message);
     void sendFile(const QString &filePath);
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
@@ -51,7 +59,7 @@ private:
     QTcpSocket *socket;  // 与服务端的连接
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
-    RegisterWindow *registerWindow;
+    LoginWindow *loginWindow;
     DatabaseManager *dbManager;      // 操纵数据库
 };
 

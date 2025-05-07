@@ -1,5 +1,5 @@
-#ifndef REGISTERWINDOW_H
-#define REGISTERWINDOW_H
+#ifndef EMAILLOGINWINDOW_H
+#define EMAILLOGINWINDOW_H
 
 #include <QWidget>
 #include <QLineEdit>
@@ -11,13 +11,13 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include "client.h"
+#include <client.h>
 
-class RegisterWindow : public QWidget {
+class EmailLoginWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit RegisterWindow(Client *client, QWidget *parent=nullptr);
+    explicit EmailLoginWindow(Client *client, QWidget *parent=nullptr);
     bool isEmailValid(const QString &email);
 
 private:
@@ -30,14 +30,12 @@ private:
     QLineEdit *nicknameEdit;
     QLineEdit *passwordEdit;
     QLineEdit *confirmPasswordEdit;
-    QLabel *errorLabel;
     QHBoxLayout *emailLayout;
     QHBoxLayout *codeLayout;
 
 private slots:
     void onSendCodeClicked();
     void onVerifyClicked();
-    void checkPasswordsMatch();
 };
 
 #endif

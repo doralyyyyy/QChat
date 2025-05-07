@@ -19,6 +19,7 @@
 #include "qlistwidget.h"
 #include "client.h"
 #include "database_manager.h"
+#include"message_search_widget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -46,6 +47,8 @@ private:
     QLineEdit *inputField;
     QPushButton *sendButton;
     QPushButton *sendFileButton;
+    MessageSearchWidget *searchWidget;
+    QPushButton *searchButton;
     Client *client;
     DatabaseManager dbManager;
 };

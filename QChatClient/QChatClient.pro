@@ -14,14 +14,20 @@ TEMPLATE = app
 SOURCES += \
     client.cpp \
     database_manager.cpp \
+    email_login_window.cpp \
+    login_window.cpp \
     main.cpp \
     main_window.cpp \
+    message_search_widget.cpp \
     register_window.cpp
 
 HEADERS += \
     client.h \
     database_manager.h \
+    email_login_window.h \
+    login_window.h \
     main_window.h \
+    message_search_widget.h \
     register_window.h
 
 FORMS += \

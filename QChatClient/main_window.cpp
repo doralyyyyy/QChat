@@ -1,8 +1,7 @@
 #include "main_window.h"
 #include "ui_main_window.h"
 
-MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow), client(client)
-{
+MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow), client(client) {
     ui->setupUi(this);
 
     // 创建聊天记录显示区
@@ -16,6 +15,10 @@ MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui
     sendButton = new QPushButton("发送", this);
     sendFileButton = new QPushButton("发送文件", this);
 
+    // 创建搜索框（提前隐藏）和搜索按钮
+    searchWidget=new MessageSearchWidget(listWidget,this);
+    searchButton=new QPushButton("搜索",this);
+
     // 创建水平布局，将按钮放到右侧
     QHBoxLayout *inputLayout = new QHBoxLayout;
     inputLayout->addWidget(inputField);
@@ -26,6 +29,9 @@ MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(listWidget);
     mainLayout->addLayout(inputLayout);
+    mainLayout->insertWidget(0,searchWidget);
+    mainLayout->insertWidget(0,searchButton,0,Qt::AlignRight);
+    mainLayout->insertWidget(1,searchWidget);
 
     // 创建 centralWidget，设置布局
     QWidget *centralWidget = new QWidget(this);
@@ -35,9 +41,14 @@ MainWindow::MainWindow(Client *client, QWidget *parent): QMainWindow(parent), ui
     connect(inputField, &QLineEdit::returnPressed, this, &MainWindow::onSendButtonClicked);
     connect(sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
     connect(sendFileButton, &QPushButton::clicked, this, &MainWindow::onSendFileButtonClicked);
+    connect(searchButton,&QPushButton::clicked,this,[=](){
+        searchWidget->activate();
+    });
 
-    QVector<QString> msgs = dbManager.loadMessages();       //恢复历史记录
-    for(const QString &line:std::as_const(msgs)) {
+    client->mainWindow=this;
+
+    QVector<QString> msgs = dbManager.loadMessages();
+    for (const QString &line : std::as_const(msgs)) {
         updateMessage(line);
     }
 }
@@ -84,13 +95,15 @@ void MainWindow::updateMessage(const QString &msg) {      // 将文本/文件显
         item->setSizeHint(QSize(0, 40));
         listWidget->addItem(item);
     }
+
+    listWidget->scrollToBottom();     // 始终滚动到最底部
 }
 
 void MainWindow::onSendButtonClicked() {
     QString message = inputField->text();  // 获取输入框中的文本
     if (!message.isEmpty()) {
         client->sendMessage(message);
-        inputField->clear();  // 清空输入框
+        inputField->clear();    // 清空输入框
     }
 }
 
