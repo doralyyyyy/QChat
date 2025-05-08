@@ -5,6 +5,8 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QListWidget>
+#include <QEvent>
+#include <QKeyEvent>
 
 class MessageSearchWidget : public QWidget {
     Q_OBJECT
@@ -17,6 +19,7 @@ private slots:
     void onTextChanged(const QString &text);
     void onPrevClicked();
     void onNextClicked();
+    bool eventFilter(QObject *obj,QEvent *event);
 
 private:
     QListWidget *listWidget;

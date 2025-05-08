@@ -16,12 +16,6 @@ Client::~Client() {
     socket->close();
 }
 
-void Client::showMessage(const QString &s) {
-    QMessageBox msgBox;
-    msgBox.setText(s);
-    msgBox.exec();
-}
-
 void Client::onConnected() {
     connect(socket, &QTcpSocket::readyRead, this, &Client::onReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Client::onDisconnected);
@@ -60,6 +54,8 @@ void Client::sendMessage(const QString &message) {
         socket->flush();        //确保消息被立即发送
         mainWindow->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
         dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
+    } else {
+        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
     }
 }
 
@@ -67,33 +63,39 @@ void Client::sendNonTextMessage(const QString &message) {    // 发送无需被�
     if (socket->state() == QTcpSocket::ConnectedState) {
         socket->write(message.toUtf8());
         socket->flush();        //确保消息被立即发送
+    } else {
+        QMessageBox::warning(nullptr, "提示", "通信失败，请检查您的网络连接！");
     }
 }
 
 void Client::sendFile(const QString& filePath) {
-    QFile file(filePath);
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray fileData = file.readAll();
-        QString filename = QFileInfo(file).fileName();
-        QString savedPath = QCoreApplication::applicationDirPath() + "/sent_" + filename;
+    if (socket->state() == QTcpSocket::ConnectedState) {
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray fileData = file.readAll();
+            QString filename = QFileInfo(file).fileName();
+            QString savedPath = QCoreApplication::applicationDirPath() + "/sent_" + filename;
 
-        socket->write(("FILE:" + filename + ":" + QString::number(fileData.size()) + "\n").toUtf8());
-        socket->write(fileData);
-        socket->flush();
-        file.close();
+            socket->write(("FILE:" + filename + ":" + QString::number(fileData.size()) + "\n").toUtf8());
+            socket->write(fileData);
+            socket->flush();
+            file.close();
 
-        QFile out(savedPath);      // 自己保存一份文件
-        if (out.open(QIODevice::WriteOnly)) {
-            out.write(fileData);
-            out.close();
+            QFile out(savedPath);      // 自己保存一份文件
+            if (out.open(QIODevice::WriteOnly)) {
+                out.write(fileData);
+                out.close();
 
-            QString content="FILE|"+filename;
-            QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-            mainWindow->updateMessage("[" + time + "] 我：" + content);
-            dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
-        } else {
-            mainWindow->updateMessage("文件保存失败：" + filename);
+                QString content="FILE|"+filename;
+                QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+                mainWindow->updateMessage("[" + time + "] 我：" + content);
+                dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
+            } else {
+                mainWindow->updateMessage("文件保存失败：" + filename);
+            }
         }
+    } else {
+        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
     }
 }
 
@@ -172,5 +174,5 @@ void Client::handleTextMessage(const QByteArray& data) {
 }
 
 void Client::onDisconnected() {
-    showMessage("与服务器断开连接");
+    QMessageBox::information(nullptr, "提示", "与服务器断开连接！");
 }

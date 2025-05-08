@@ -16,10 +16,15 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QTimer>
+#include <QProcess>
+#include <QLabel>
+#include <QPixmap>
+#include "delay_send_dialog.h"
 #include "qlistwidget.h"
 #include "client.h"
 #include "database_manager.h"
-#include"message_search_widget.h"
+#include "message_search_widget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -36,19 +41,28 @@ public:
     ~MainWindow();
 
     void updateMessage(const QString &message);
+    void exportChatToTxt();
+    void showRelationshipAnalysis();
 
 private slots:
     void onSendButtonClicked();
     void onSendFileButtonClicked();
+    void onSearchButtonClicked();
+    void onDelaySendClicked();
+    void onWordCloudRequested();
+    void onRelationAnalysisRequested();
+    void onRecordButtonClicked();
 
 private:
     Ui::MainWindow *ui;
     QListWidget *listWidget;
     QLineEdit *inputField;
+    QPushButton *recordButton;
     QPushButton *sendButton;
     QPushButton *sendFileButton;
     MessageSearchWidget *searchWidget;
     QPushButton *searchButton;
+    QPushButton *delaySendButton;
     Client *client;
     DatabaseManager dbManager;
 };

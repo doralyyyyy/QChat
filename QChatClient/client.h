@@ -48,7 +48,6 @@ public:
     void sendFile(const QString &filePath);
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
-    void showMessage(const QString &message);    // 弹出提示框
 
 private slots:
     void onConnected();   // 客户端连接成功时的槽

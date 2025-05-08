@@ -22,7 +22,7 @@ EmailLoginWindow::EmailLoginWindow(Client *client, QWidget *parent) : QWidget(pa
     mainLayout->addLayout(codeLayout);
 
     setLayout(mainLayout);
-    setWindowTitle("注册");
+    setWindowTitle("邮箱验证码登录");
     resize(300, 120);
 
     client->emailLoginWindow = this;

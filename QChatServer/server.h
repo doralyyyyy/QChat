@@ -12,6 +12,7 @@
 #include <QDir>
 #include <QtGlobal>
 #include <QProcess>
+#include <QMessageBox>
 #include "database_manager.h"
 #include "user_auth_database_manager.h"
 
@@ -31,6 +32,7 @@ public:
         bool headerReceived=false;
     };
     QMap<QTcpSocket*, FileInfo> fileMap;
+    QString user="server";
 
     void sendVerificationCode(const QString &email, const QString &code);
     void sendVerificationCodeBack(const QString &code);

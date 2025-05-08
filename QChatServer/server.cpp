@@ -26,7 +26,7 @@ void Server::onNewConnection() {
     socket = server->nextPendingConnection();
     connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Server::onDisconnected);
-    mainWindow->updateMessage("客户端已连接");
+    QMessageBox::information(nullptr, "", "客户端已连接");
 }
 
 void Server::sendMessage(const QString &message) {
@@ -185,7 +185,7 @@ void Server::sendVerificationCode(const QString &email, const QString &code) {  
 
     // 设置 Python 程序与参数
     QString python="python";
-    QString scriptPath=QCoreApplication::applicationDirPath()+"/send_email.py";   // python程序与数据库同在Debug的debug中
+    QString scriptPath=QCoreApplication::applicationDirPath()+"/../../../send_email.py";   // python程序和主函数同级
 
     QStringList args;
     args<<scriptPath<<email<<code;
@@ -222,6 +222,6 @@ void Server::sendVerificationCodeBack(const QString &code) {   // 把验证码�
 }
 
 void Server::onDisconnected() {
-    mainWindow->updateMessage("客户端断开连接");
+    QMessageBox::information(nullptr, "", "客户端断开连接");
     socket->deleteLater();
 }

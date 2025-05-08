@@ -79,7 +79,7 @@ void RegisterWindow::onSendCodeClicked() {
         QMessageBox::warning(this, "错误", "请输入有效的邮箱地址！");
         return;
     }
-    QString msg="Email:"+email;
+    QString msg="EMAIL:"+email;
     client->nowEmail=email;
     client->sendNonTextMessage(msg);
 }

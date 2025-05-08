@@ -1,6 +1,7 @@
 QT       += core gui
 QT       += network
 QT       += sql
+QT       += widgets multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,24 +15,34 @@ TEMPLATE = app
 SOURCES += \
     client.cpp \
     database_manager.cpp \
+    delay_send_dialog.cpp \
     email_login_window.cpp \
+    feature_menu_widget.cpp \
     login_window.cpp \
     main.cpp \
     main_window.cpp \
+    message_bubble_widget.cpp \
     message_search_widget.cpp \
+    record_dialog.cpp \
     register_window.cpp
 
 HEADERS += \
     client.h \
     database_manager.h \
+    delay_send_dialog.h \
     email_login_window.h \
+    feature_menu_widget.h \
     login_window.h \
     main_window.h \
+    message_bubble_widget.h \
     message_search_widget.h \
-    register_window.h
+    record_dialog.h \
+    register_window.h \
+    ui_record_dialog.h
 
 FORMS += \
-    main_window.ui
+    main_window.ui \
+    record_dialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
