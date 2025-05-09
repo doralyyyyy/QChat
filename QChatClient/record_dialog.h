@@ -1,16 +1,14 @@
-#ifndef RECORDDIALOG_H
-#define RECORDDIALOG_H
-
 #include <QDialog>
-#include <QAudioSource>
-#include <QFile>
 #include <QPushButton>
-#include <QVBoxLayout>
+#include <QMediaRecorder>
+#include <QMediaCaptureSession>
+#include <QAudioInput>
+#include <QTimer>
+#include <QLabel>
 
 class RecordDialog : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit RecordDialog(QWidget *parent = nullptr);
     ~RecordDialog();
@@ -20,17 +18,16 @@ public:
 private slots:
     void startRecording();
     void stopRecording();
+    void timePass();
 
 private:
-    QAudioSource *audioSource;
-    QFile audioFile;
-    QString audioFilePath;
-    QAudioFormat audioFormat;
     QPushButton *startButton;
     QPushButton *stopButton;
-
-    void writeWavHeader();
-    void finalizeWavFile();
+    QTimer *timer;
+    QLabel *timeLabel;
+    int elapsedSeconds;
+    QMediaRecorder *mediaRecorder;
+    QMediaCaptureSession *mediaCaptureSession;
+    QAudioInput *audioInput;
+    QString audioFilePath;
 };
-
-#endif // RECORDDIALOG_H

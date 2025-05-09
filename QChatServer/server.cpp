@@ -36,34 +36,40 @@ void Server::sendMessage(const QString &message) {
         socket->flush();        //确保消息被立即发送
         mainWindow->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
         dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
+    } else {
+        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
     }
 }
 
 void Server::sendFile(const QString& filePath) {
-    QFile file(filePath);
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray fileData = file.readAll();
-        QString filename = QFileInfo(file).fileName();
-        QString savedPath = QCoreApplication::applicationDirPath() + "/sent_" + filename;
+    if (socket&&socket->state() == QTcpSocket::ConnectedState) {
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray fileData = file.readAll();
+            QString filename = QFileInfo(file).fileName();
+            QString savedPath = QCoreApplication::applicationDirPath() + "/sent_" + filename;
 
-        socket->write(("FILE:" + filename + ":" + QString::number(fileData.size()) + "\n").toUtf8());
-        socket->write(fileData);
-        socket->flush();
-        file.close();
+            socket->write(("FILE:" + filename + ":" + QString::number(fileData.size()) + "\n").toUtf8());
+            socket->write(fileData);
+            socket->flush();
+            file.close();
 
-        // 自己保存一份文件
-        QFile out(savedPath);
-        if (out.open(QIODevice::WriteOnly)) {
-            out.write(fileData);
-            out.close();
+            // 自己保存一份文件
+            QFile out(savedPath);
+            if (out.open(QIODevice::WriteOnly)) {
+                out.write(fileData);
+                out.close();
 
-            QString content="FILE|"+filename;
-            QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-            mainWindow->updateMessage("[" + time + "] 我：" + content);
-            dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
-        } else {
-            mainWindow->updateMessage("文件保存失败：" + filename);
+                QString content="FILE|"+filename;
+                QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+                mainWindow->updateMessage("[" + time + "] 我：" + content);
+                dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
+            } else {
+                mainWindow->updateMessage("文件保存失败：" + filename);
+            }
         }
+    } else {
+        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
     }
 }
 

@@ -3,6 +3,7 @@
 #include "ui_main_window.h"
 #include "feature_menu_widget.h"
 #include "record_dialog.h"
+#include "camera.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     sendFileButton=new QPushButton("发送文件",this);
     delaySendButton=new QPushButton("延迟发送",this);
     recordButton=new QPushButton("语音转文字",this);
+    cameraButton=new QPushButton("拍照",this);
 
     // 创建搜索框（提前隐藏）和搜索按钮
     searchWidget=new MessageSearchWidget(listWidget,this);
@@ -28,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 创建水平布局，将按钮放到右侧
     QHBoxLayout *inputLayout=new QHBoxLayout;
+    inputLayout->addWidget(cameraButton);
     inputLayout->addWidget(recordButton);
     inputLayout->addWidget(inputField);
     inputLayout->addWidget(sendButton);
@@ -51,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     addToolBar(Qt::TopToolBarArea,menuWidget->getToolBar());
     connect(menuWidget, &FeatureMenuWidget::wordCloudRequested, this, &MainWindow::onWordCloudRequested);
     connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &MainWindow::onRelationAnalysisRequested);
+    connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &MainWindow::onexportChatToPdfRequested);
 
     connect(inputField,&QLineEdit::returnPressed,this,&MainWindow::onSendButtonClicked);
     connect(sendButton,&QPushButton::clicked,this,&MainWindow::onSendButtonClicked);
@@ -58,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(delaySendButton,&QPushButton::clicked,this,&MainWindow::onDelaySendClicked);
     connect(searchButton, &QPushButton::clicked, this, &MainWindow::onSearchButtonClicked);
     connect(recordButton,&QPushButton::clicked,this,&MainWindow::onRecordButtonClicked);
+    connect(cameraButton,&QPushButton::clicked,this,&MainWindow::onCameraButtonClicked);
 
     server = new Server(11455, this);    // 启动服务器，并监听11455端口
 
@@ -76,6 +81,8 @@ void MainWindow::updateMessage(const QString &msg) {
     QString content = msg.mid(nameEnd + 1); // 内容（支持带冒号）
 
     bool isSelf = (sender == "我");
+
+    messages.append(Message(time, sender, content));
 
     MessageBubbleWidget *messageBubble = new MessageBubbleWidget(time, sender, content, isSelf);
 
@@ -113,10 +120,8 @@ void MainWindow::onDelaySendClicked() {
 
 void MainWindow::onSearchButtonClicked() {
     if (searchWidget->isVisible()) {
-        qDebug()<<'1';
         searchWidget->hideAll();
     } else {
-        qDebug()<<'2';
         searchWidget->activate();
     }
 }
@@ -174,16 +179,52 @@ void MainWindow::onRelationAnalysisRequested() {
     }
 }
 
+void MainWindow::onexportChatToPdfRequested() {
+    QTextDocument document;
+
+    // 遍历 messages 列表，将每条消息的内容、发送者和时间拼接成格式化文本
+    QString formattedContent;
+    for (const Message &msg : std::as_const(messages)) {
+        formattedContent += msg.time + " " + msg.sender + "：\n" + msg.content + "\n\n";
+    }
+
+    document.setPlainText(formattedContent);  // 设置文本内容
+
+    // 创建 PDF 打印机对象
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+
+    // 弹出文件保存对话框，让用户选择保存位置
+    QString filePath = QFileDialog::getSaveFileName(this, "保存为 PDF", "", "*.pdf");
+    if (filePath.isEmpty()) {
+        return; // 如果用户取消了保存，直接退出
+    }
+
+    printer.setOutputFileName(filePath); // 设置输出的 PDF 文件路径
+
+    // 打印文档内容到 PDF 文件
+    document.print(&printer);
+
+    QMessageBox::information(this, "成功", "聊天记录已成功导出为 PDF");
+}
+
 void MainWindow::onRecordButtonClicked() {
     RecordDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
         QString filePath = dlg.getAudioFilePath();
         QProcess *p = new QProcess(this);
+
+        // 设置环境变量：确保 ffmpeg 能被 Python 脚本访问
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("PATH", env.value("PATH") + ";" + QCoreApplication::applicationDirPath() + "/../../../ffmpeg/bin");
+        p->setProcessEnvironment(env);
+
         QString program = "python";
         QStringList args;
         QString scriptPath = QCoreApplication::applicationDirPath() + "/../../../speech_to_text.py";
         args << scriptPath << filePath;
         p->start(program, args);
+
         connect(p, &QProcess::readyReadStandardOutput, this, [=]() {
             QByteArray output = p->readAllStandardOutput();
             QString result = QString::fromUtf8(output).trimmed();
@@ -194,6 +235,11 @@ void MainWindow::onRecordButtonClicked() {
             QMessageBox::warning(this, "错误", "Python 脚本启动失败：" + QString::number(err));
         });
     }
+}
+
+void MainWindow::onCameraButtonClicked(){
+    Camera *cam=new Camera(server,this);
+    cam->show();
 }
 
 MainWindow::~MainWindow() {

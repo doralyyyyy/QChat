@@ -17,6 +17,7 @@ public:
 signals:
     void wordCloudRequested();
     void relationAnalysisRequested();
+    void exportChatToPdfRequested();
 
 private:
     QToolBar *toolBar;

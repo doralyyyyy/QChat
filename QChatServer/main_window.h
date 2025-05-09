@@ -20,11 +20,14 @@
 #include <QProcess>
 #include <QLabel>
 #include <QPixmap>
+#include <QPrinter>
+#include <QList>
 #include "delay_send_dialog.h"
 #include "qlistwidget.h"
 #include "server.h"
 #include "database_manager.h"
 #include "message_search_widget.h"
+#include "message.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -49,14 +52,17 @@ private slots:
     void onSendFileButtonClicked();
     void onSearchButtonClicked();
     void onDelaySendClicked();
+    void onRecordButtonClicked();
+    void onCameraButtonClicked();
     void onWordCloudRequested();
     void onRelationAnalysisRequested();
-    void onRecordButtonClicked();
+    void onexportChatToPdfRequested();
 
 private:
     Ui::MainWindow *ui;
     QListWidget *listWidget;
     QLineEdit *inputField;
+    QPushButton *cameraButton;
     QPushButton *recordButton;
     QPushButton *sendButton;
     QPushButton *sendFileButton;
@@ -65,6 +71,7 @@ private:
     QPushButton *delaySendButton;
     Server *server;
     DatabaseManager dbManager;
+    QList<Message> messages;
 };
 
 #endif

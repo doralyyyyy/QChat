@@ -11,7 +11,7 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent):QWidget(parent) {
     QMenu *menu=new QMenu(menuBtn);
     QAction *wordCloudAction=menu->addAction("高频词统计");
     QAction *relationAction=menu->addAction("用户关系分析");
-    menu->addAction("暂定");
+    QAction *exportPdfAction=menu->addAction("导出聊天记录为 PDF");
     menu->addAction("暂定");
 
     menuBtn->setMenu(menu);
@@ -22,7 +22,8 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent):QWidget(parent) {
     toolBar->setFloatable(false);
 
     connect(wordCloudAction,&QAction::triggered,this,&FeatureMenuWidget::wordCloudRequested);
-    connect(relationAction,&QAction::triggered,this,&FeatureMenuWidget::relationAnalysisRequested);  // 新连接
+    connect(relationAction,&QAction::triggered,this,&FeatureMenuWidget::relationAnalysisRequested);
+    connect(exportPdfAction,&QAction::triggered,this,&FeatureMenuWidget::exportChatToPdfRequested);
 }
 
 QToolBar* FeatureMenuWidget::getToolBar() {
