@@ -18,15 +18,36 @@ DelaySendDialog::DelaySendDialog(Client *client, QWidget *parent) : QDialog(pare
     textInput->setPlaceholderText("请输入要发送的消息");
 
     // 相对时间设置
-    hSpin=new QSpinBox(this); hSpin->setRange(0,23);
-    mSpin=new QSpinBox(this); mSpin->setRange(0,59);
-    sSpin=new QSpinBox(this); sSpin->setRange(0,59);
+    hSpin=new QSpinBox(this);
+    hSpin->setRange(0,23);
+    hSpin->setFixedSize(60,25); // 给它一个合理尺寸
 
+    mSpin=new QSpinBox(this);
+    mSpin->setRange(0,59);
+    mSpin->setFixedSize(60,25);
+
+    sSpin=new QSpinBox(this);
+    sSpin->setRange(0,59);
+    sSpin->setFixedSize(60,25);
+
+    // 设置样式，确保按钮不被压缩
+    QString spinStyle =
+        "QSpinBox::up-button { width: 16px; height: 12px; }"
+        "QSpinBox::down-button { width: 16px; height: 12px; }"
+        "QSpinBox::up-arrow, QSpinBox::down-arrow { width: 8px; height: 8px; }";
+
+    hSpin->setStyleSheet(spinStyle);
+    mSpin->setStyleSheet(spinStyle);
+    sSpin->setStyleSheet(spinStyle);
+
+    // 保证布局不要太挤压
     QHBoxLayout *relativeLayout=new QHBoxLayout;
     relativeLayout->addWidget(new QLabel("时:"));
     relativeLayout->addWidget(hSpin);
+    relativeLayout->addSpacing(10);
     relativeLayout->addWidget(new QLabel("分:"));
     relativeLayout->addWidget(mSpin);
+    relativeLayout->addSpacing(10);
     relativeLayout->addWidget(new QLabel("秒:"));
     relativeLayout->addWidget(sSpin);
 

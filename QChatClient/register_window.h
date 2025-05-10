@@ -33,11 +33,13 @@ private:
     QLabel *errorLabel;
     QHBoxLayout *emailLayout;
     QHBoxLayout *codeLayout;
+    QPushButton *backButton;
 
 private slots:
     void onSendCodeClicked();
     void onVerifyClicked();
     void checkPasswordsMatch();
+    void onBackToLoginClicked();
 };
 
 #endif

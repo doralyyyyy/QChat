@@ -11,15 +11,44 @@ RecordDialog::RecordDialog(QWidget *parent)
     : QDialog(parent), mediaRecorder(nullptr), mediaCaptureSession(nullptr), audioInput(nullptr)
 {
     setWindowTitle("语音转文字");
-    setFixedSize(150,100);
+    setFixedSize(250,150);  // 调整界面大小
+    setStyleSheet(R"(
+        QDialog {
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            padding: 15px;
+        }
+        QLabel {
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+        QPushButton {
+            background-color: #ff7f7f;
+            color: white;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        QPushButton:disabled {
+            background-color: #cccccc;
+        }
+        QPushButton:hover {
+            background-color: #ff4c4c;
+        }
+    )");
+
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     timeLabel = new QLabel("已录制：0 秒", this);
+    timeLabel->setAlignment(Qt::AlignCenter);
+
     startButton = new QPushButton("开始录音", this);
     stopButton = new QPushButton("停止录音", this);
-    stopButton->setEnabled(false);
+    stopButton->setEnabled(false); // 默认禁止停止按钮
 
-    layout->insertWidget(0, timeLabel);
+    layout->addWidget(timeLabel);
     layout->addWidget(startButton);
     layout->addWidget(stopButton);
 
@@ -65,8 +94,8 @@ void RecordDialog::startRecording()
 
     mediaRecorder->record();
 
-    startButton->setEnabled(false);
-    stopButton->setEnabled(true);
+    startButton->setEnabled(false); // 禁止开始录音按钮
+    stopButton->setEnabled(true);   // 启用停止按钮
 }
 
 void RecordDialog::stopRecording()
@@ -74,8 +103,8 @@ void RecordDialog::stopRecording()
     timer->stop();
     mediaRecorder->stop();
 
-    startButton->setEnabled(true);
-    stopButton->setEnabled(false);
+    startButton->setEnabled(true);  // 启用开始录音按钮
+    stopButton->setEnabled(false);  // 禁止停止按钮
 
     accept(); // 关闭对话框
 }

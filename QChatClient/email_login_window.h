@@ -21,6 +21,7 @@ public:
     bool isEmailValid(const QString &email);
 
 private:
+    QPushButton *backButton;
     QLineEdit *emailEdit;
     QPushButton *sendCodeButton;
     QLineEdit *codeEdit;
@@ -36,6 +37,7 @@ private:
 private slots:
     void onSendCodeClicked();
     void onVerifyClicked();
+    void onBackToLoginClicked();
 };
 
 #endif

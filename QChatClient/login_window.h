@@ -5,15 +5,21 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
-#include <QLabel>
 #include <QSettings>
+#include <QPainter>
+#include <QMouseEvent>
 #include "client.h"
 
 class LoginWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit LoginWindow(QWidget *parent=nullptr);
+    explicit LoginWindow(Client* client, QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent *) override;
+    void mousePressEvent(QMouseEvent *event) override;  // 添加鼠标按下事件
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
     QLineEdit *accountEdit;

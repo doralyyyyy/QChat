@@ -64,8 +64,20 @@ void MessageSearchWidget::onTextChanged(const QString &text) {
         QListWidgetItem *item = listWidget->item(i);
         QString content = item->data(Qt::UserRole).toString();
         bool matched = content.contains(text, Qt::CaseInsensitive);
-        item->setBackground(matched ? QBrush(Qt::yellow) : QBrush());
-        if (matched && currentSearchIndex == -1) currentSearchIndex = i;
+
+        if (matched) {
+            if (i == currentSearchIndex) {
+                item->setBackground(QBrush(QColor("#424242")));
+            } else {
+                item->setBackground(QBrush(QColor("#F1F1F1")));
+            }
+        } else {
+            item->setBackground(QBrush());
+        }
+
+        if (matched && currentSearchIndex == -1) {
+            currentSearchIndex = i;
+        }
     }
 
     if (currentSearchIndex != -1) {
@@ -73,6 +85,7 @@ void MessageSearchWidget::onTextChanged(const QString &text) {
         listWidget->scrollToItem(listWidget->item(currentSearchIndex), QAbstractItemView::PositionAtCenter);
     }
 }
+
 
 void MessageSearchWidget::onPrevClicked() {
     if (lastSearchText.isEmpty()) return;

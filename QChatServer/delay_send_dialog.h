@@ -1,5 +1,6 @@
 #ifndef DELAYSENDDIALOG_H
 #define DELAYSENDDIALOG_H
+
 #include "server.h"
 #include <QDialog>
 #include <QDateTime>

@@ -2,7 +2,7 @@ QT       += core gui
 QT       += network
 QT       += sql
 QT       += widgets multimedia multimediawidgets
-QT       += printsupport
+QT       += printsupport charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,6 +15,7 @@ TEMPLATE = app
 
 SOURCES += \
     camera.cpp \
+    close_confirm_dialog.cpp \
     database_manager.cpp \
     delay_send_dialog.cpp \
     feature_menu_widget.cpp \
@@ -22,22 +23,27 @@ SOURCES += \
     main_window.cpp \
     message.cpp \
     message_bubble_widget.cpp \
+    message_context_menu_handler.cpp \
     message_search_widget.cpp \
     record_dialog.cpp \
     server.cpp \
+    tray_manager.cpp \
     user_auth_database_manager.cpp
 
 HEADERS += \
     camera.h \
+    close_confirm_dialog.h \
     database_manager.h \
     delay_send_dialog.h \
     feature_menu_widget.h \
     main_window.h \
     message.h \
     message_bubble_widget.h \
+    message_context_menu_handler.h \
     message_search_widget.h \
     record_dialog.h \
     server.h \
+    tray_manager.h \
     user_auth_database_manager.h
 
 FORMS += \

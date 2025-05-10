@@ -18,6 +18,7 @@ signals:
     void wordCloudRequested();
     void relationAnalysisRequested();
     void exportChatToPdfRequested();
+    void generateTimelineRequested();
 
 private:
     QToolBar *toolBar;

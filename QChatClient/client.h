@@ -37,6 +37,7 @@ public:
     MainWindow *mainWindow;
     RegisterWindow *registerWindow;
     EmailLoginWindow *emailLoginWindow;
+    LoginWindow *loginWindow;
 
     void sendVerificationEmail(const QString& email);
     void sendVerificationCode(const QString& code);
@@ -58,7 +59,6 @@ private:
     QTcpSocket *socket;  // 与服务端的连接
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
-    LoginWindow *loginWindow;
     DatabaseManager *dbManager;      // 操纵数据库
 };
 

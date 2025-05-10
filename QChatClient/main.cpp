@@ -9,11 +9,12 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("QChat");
     QCoreApplication::setApplicationName("QChatClient");
 
-    // LoginWindow l;
+    Client *client = new Client("localhost", 11455);      // 连接穿透网，11455端口
+
+    // LoginWindow l(client);
     // l.show();
 
-    // 注释掉上面两行，给下面四行取消注释，修改第一个传入参数，可直接进入main_window测试
-    Client *client = new Client("localhost", 11455);
+    // 注释掉上面两行，给下面三行取消注释，可直接进入main_window测试
     MainWindow w(client);
     client->mainWindow = &w;
     w.show();

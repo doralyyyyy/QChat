@@ -28,6 +28,8 @@
 #include "database_manager.h"
 #include "message_search_widget.h"
 #include "message.h"
+#include "message_context_menu_handler.h"
+#include "tray_manager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -45,6 +47,7 @@ public:
 
     void updateMessage(const QString &message);
     void exportChatToTxt();
+    void closeEvent(QCloseEvent *event);
 
 
 private slots:
@@ -56,7 +59,8 @@ private slots:
     void onCameraButtonClicked();
     void onWordCloudRequested();
     void onRelationAnalysisRequested();
-    void onexportChatToPdfRequested();
+    void onExportChatToPdfRequested();
+    void onGenerateTimelineRequested();
 
 private:
     Ui::MainWindow *ui;
@@ -69,6 +73,8 @@ private:
     MessageSearchWidget *searchWidget;
     QPushButton *searchButton;
     QPushButton *delaySendButton;
+    MessageContextMenuHandler *contextMenu;
+    TrayManager *trayManager;
     Server *server;
     DatabaseManager dbManager;
     QList<Message> messages;

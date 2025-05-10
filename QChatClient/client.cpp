@@ -5,7 +5,7 @@
 #include "email_login_window.h"
 
 Client::Client(const QString &host, quint16 port, LoginWindow *loginWindow, QObject *parent)
-    : QObject(parent), mainWindow(nullptr), serverHost(host), serverPort(port), loginWindow(loginWindow) {
+    : QObject(parent), mainWindow(nullptr), loginWindow(loginWindow), serverHost(host), serverPort(port) {
     socket = new QTcpSocket(this);
     dbManager = new DatabaseManager;
     connect(socket, &QTcpSocket::connected, this, &Client::onConnected);

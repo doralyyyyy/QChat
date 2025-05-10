@@ -8,24 +8,26 @@
 MessageBubbleWidget::MessageBubbleWidget(const QString &time, const QString &sender, const QString &content, bool isSelf, QWidget *parent)
     : QWidget(parent), isSelf(isSelf) {
     labelTop = new QLabel(time);
-    labelBottom = new QLabel(sender + "：" + (content.startsWith("FILE|") ? content.mid(5) : content));
-    labelTop->setStyleSheet("color: gray;");
+    labelBottom = new QLabel(content.startsWith("FILE|") ? content.mid(5) : content); // 只显示消息内容
+    labelTop->setStyleSheet("color: gray; font-size: 10px;");
     labelBottom->setWordWrap(true);
+    labelBottom->setStyleSheet("font-size: 14px; color: #333;");
 
     bubbleLayout = new QVBoxLayout;
     bubbleLayout->addWidget(labelTop);
     bubbleLayout->addWidget(labelBottom);
-    bubbleLayout->setSpacing(2);
-    bubbleLayout->setContentsMargins(10, 6, 10, 6);
+    bubbleLayout->setSpacing(4); // 更细致的间距
+    bubbleLayout->setContentsMargins(15, 10, 15, 10);
 
+    // 背景颜色和圆角
     bubble = new QWidget;
     bubble->setLayout(bubbleLayout);
-    bubble->setStyleSheet(QString("background-color:%1; border-radius:8px;").arg(isSelf ? "#dcf8c6" : "#e1f5fe"));
-    bubble->setMaximumWidth(400);
+    bubble->setStyleSheet(QString("background-color:%1; border-radius:12px;").arg(isSelf ? "#dcf8c6" : "#e1f5fe"));
+    bubble->setMaximumWidth(350);  // 限制最大宽度
 
     hLayout = new QHBoxLayout;
-    hLayout->setContentsMargins(10, 5, 10, 5);
-    hLayout->setSpacing(5);
+    hLayout->setContentsMargins(15, 10, 15, 10);  // 改变外部间距
+    hLayout->setSpacing(8);
 
     if (content.startsWith("FILE|")) {
         setupFileMessage(content);
@@ -59,6 +61,19 @@ void MessageBubbleWidget::setupFileMessage(const QString &content) {
     else if (QFile::exists(tryPath2)) path = tryPath2;
 
     QPushButton *btn = new QPushButton("打开");
+    btn->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
+            border-radius: 10px;
+            color: white;
+            padding: 6px 10px;
+        }
+
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
+        }
+    )");
+
     connect(btn, &QPushButton::clicked, this, [path]() {
         QDesktopServices::openUrl(QUrl::fromLocalFile(path));
     });

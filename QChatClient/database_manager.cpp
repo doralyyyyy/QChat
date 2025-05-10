@@ -45,7 +45,7 @@ QVector<QString> DatabaseManager::loadMessages() {
         } else {
             while (q.next()) {
                 QString s = q.value(0).toString();
-                QString r = q.value(1).toString();
+                // QString r = q.value(1).toString();
                 QString m = q.value(2).toString();
                 QString t = q.value(3).toString();
                 QString line = QString("[%1] %2 ：%3").arg(t, s, m);
