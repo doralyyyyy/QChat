@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>images/login_background.png</file>
+        <file>icon.png</file>
+        <file>welcome.qml</file>
     </qresource>
 </RCC>

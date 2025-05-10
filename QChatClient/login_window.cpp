@@ -127,7 +127,7 @@ QPoint mousePressPos;
 void LoginWindow::mousePressEvent(QMouseEvent *event) {
     // 记录鼠标按下的位置
     if (event->button() == Qt::LeftButton) {
-        mousePressPos = event->globalPos() - this->pos();
+        mousePressPos = event->globalPosition().toPoint() - this->pos();
         event->accept();
     }
 }
@@ -135,7 +135,7 @@ void LoginWindow::mousePressEvent(QMouseEvent *event) {
 void LoginWindow::mouseMoveEvent(QMouseEvent *event) {
     // 通过鼠标移动来改变窗口位置
     if (event->buttons() & Qt::LeftButton) {
-        this->move(event->globalPos() - mousePressPos);
+        this->move(event->globalPosition().toPoint() - mousePressPos);
         event->accept();
     }
 }

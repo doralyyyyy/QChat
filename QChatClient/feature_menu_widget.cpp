@@ -1,36 +1,37 @@
 #include "feature_menu_widget.h"
-#include <QPushButton>
+#include <QToolButton>
 #include <QMenu>
 #include <QAction>
 #include <QToolBar>
 
 FeatureMenuWidget::FeatureMenuWidget(QWidget *parent) : QWidget(parent) {
-    QPushButton *menuBtn = new QPushButton("菜单", this);
+    QToolButton *menuBtn=new QToolButton(this);
+    menuBtn->setText("菜单");
+    menuBtn->setPopupMode(QToolButton::InstantPopup); // 点击即弹出
     menuBtn->setStyleSheet(R"(
-        QPushButton {
-            font-size: 14px;
-            text-align: center;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
+        QToolButton {
+            padding: 10px;
             border: none;
-            border-radius: 20px;
+            border-radius: 12px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #ff9a9e, stop:1 #fad0c4);
             color: white;
-            min-width: 100px;
-            min-height: 50px;
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
+        QToolButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
     )");
 
-    menuBtn->setFixedSize(70, 50);
+    QMenu *menu=new QMenu(menuBtn);
 
-    QMenu *menu = new QMenu(menuBtn);
-
-    QAction *wordCloudAction = menu->addAction("高频词统计");
-    QAction *relationAction = menu->addAction("用户关系分析");
-    QAction *exportPdfAction = menu->addAction("导出聊天记录为 PDF");
-    QAction *timelineAction=menu->addAction("聊天记录时间轴");
+    QAction *wordCloudAction=menu->addAction("       高频词统计");
+    QAction *relationAction=menu->addAction("     用户关系分析");
+    QAction *exportPdfAction=menu->addAction("导出聊天记录为 PDF");
+    QAction *timelineAction=menu->addAction("   聊天记录时间轴");
 
     menu->setStyleSheet(R"(
         QMenu {
@@ -60,14 +61,14 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent) : QWidget(parent) {
 
     menuBtn->setMenu(menu);
 
-    toolBar = new QToolBar(this);
+    toolBar=new QToolBar(this);
     toolBar->addWidget(menuBtn);
     toolBar->setMovable(false);
     toolBar->setFloatable(false);
 
-    connect(wordCloudAction, &QAction::triggered, this, &FeatureMenuWidget::wordCloudRequested);
-    connect(relationAction, &QAction::triggered, this, &FeatureMenuWidget::relationAnalysisRequested);
-    connect(exportPdfAction, &QAction::triggered, this, &FeatureMenuWidget::exportChatToPdfRequested);
+    connect(wordCloudAction,&QAction::triggered,this,&FeatureMenuWidget::wordCloudRequested);
+    connect(relationAction,&QAction::triggered,this,&FeatureMenuWidget::relationAnalysisRequested);
+    connect(exportPdfAction,&QAction::triggered,this,&FeatureMenuWidget::exportChatToPdfRequested);
     connect(timelineAction,&QAction::triggered,this,&FeatureMenuWidget::generateTimelineRequested);
 }
 

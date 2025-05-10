@@ -12,7 +12,9 @@ class FeatureMenuWidget : public QWidget {
     Q_OBJECT
 public:
     explicit FeatureMenuWidget(QWidget *parent=nullptr);
-    QToolBar* getToolBar();
+    QToolBar *getToolBar();
+
+    QPushButton *menuBtn;
 
 signals:
     void wordCloudRequested();

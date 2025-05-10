@@ -37,7 +37,7 @@ RegisterWindow::RegisterWindow(Client *client, QWidget *parent) : QWidget(parent
     codeLayout->addWidget(verifyButton);
 
     //返回按钮
-    QPushButton *backButton = new QPushButton("返回登录", this);
+    backButton = new QPushButton("返回登录", this);
     connect(backButton, &QPushButton::clicked, this, &RegisterWindow::onBackToLoginClicked);
 
     // 加入布局

@@ -116,6 +116,14 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
     // 设置菜单栏
     FeatureMenuWidget *menuWidget = new FeatureMenuWidget(this);
     addToolBar(Qt::TopToolBarArea, menuWidget->getToolBar());
+    QHBoxLayout *topRightLayout = new QHBoxLayout;
+    topRightLayout->addWidget(menuWidget->getToolBar());
+    topRightLayout->addStretch();             // 拉伸
+    topRightLayout->addWidget(searchButton);
+    QWidget *topRightWidget = new QWidget(this);
+    topRightWidget->setLayout(topRightLayout);
+    mainLayout->insertWidget(0, topRightWidget); // 插入最顶部
+
     connect(menuWidget, &FeatureMenuWidget::wordCloudRequested, this, &MainWindow::onWordCloudRequested);
     connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &MainWindow::onRelationAnalysisRequested);
     connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &MainWindow::onExportChatToPdfRequested);
@@ -160,16 +168,14 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
             padding: 10px;
             border: none;
             border-radius: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #ff9a9e, stop:1 #fad0c4);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
             color: white;
             font-size: 16px;
             font-weight: bold;
         }
 
         QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #fbc2eb, stop:1 #a6c1ee);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
 
         QPushButton#sendButton {

@@ -3,6 +3,7 @@ QT       += network
 QT       += sql
 QT       += widgets multimedia multimediawidgets
 QT       += printsupport charts
+QT       += quick quickcontrols2 quick3d
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
