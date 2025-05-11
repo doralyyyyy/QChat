@@ -116,6 +116,14 @@ MainWindow::MainWindow(QWidget *parent)
     // 设置菜单栏
     FeatureMenuWidget *menuWidget = new FeatureMenuWidget(this);
     addToolBar(Qt::TopToolBarArea, menuWidget->getToolBar());
+    QHBoxLayout *topRightLayout = new QHBoxLayout;
+    topRightLayout->addWidget(menuWidget->getToolBar());
+    topRightLayout->addStretch();             // 拉伸
+    topRightLayout->addWidget(searchButton);
+    QWidget *topRightWidget = new QWidget(this);
+    topRightWidget->setLayout(topRightLayout);
+    mainLayout->insertWidget(0, topRightWidget); // 插入最顶部
+
     connect(menuWidget, &FeatureMenuWidget::wordCloudRequested, this, &MainWindow::onWordCloudRequested);
     connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &MainWindow::onRelationAnalysisRequested);
     connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &MainWindow::onExportChatToPdfRequested);

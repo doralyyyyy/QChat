@@ -38,6 +38,8 @@ MessageBubbleWidget::MessageBubbleWidget(const QString &time, const QString &sen
     QWidget *w = new QWidget;
     w->setLayout(hLayout);
     setLayout(hLayout);
+
+    (void)sender;     // 去除警告
 }
 
 void MessageBubbleWidget::setupTextMessage() {

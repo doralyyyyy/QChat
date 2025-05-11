@@ -39,7 +39,7 @@ Window {
             // 从侧面（90度）开始，旋转到另一侧（-90度）
             NumberAnimation on eulerRotation.y {
                 from: 90
-                to: -90
+                to: -270
                 duration: 4000
                 loops: Animation.Infinite
             }
