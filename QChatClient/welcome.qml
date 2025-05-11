@@ -6,14 +6,14 @@ Window {
     width: 800
     height: 600
     visible: true
-    title: "Welcome to QChat"
+    flags: Qt.FramelessWindowHint
+    color: "transparent"
 
     View3D {
         anchors.fill: parent
 
         environment: SceneEnvironment {
-            backgroundMode: SceneEnvironment.Color
-            clearColor: "#ffffff"
+            backgroundMode: SceneEnvironment.Transparent
         }
 
         PerspectiveCamera {
@@ -36,7 +36,6 @@ Window {
                 }
             ]
 
-            // 从侧面（90度）开始，旋转到另一侧（-90度）
             NumberAnimation on eulerRotation.y {
                 from: 90
                 to: -270
