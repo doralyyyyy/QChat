@@ -5,6 +5,9 @@
 #include "record_dialog.h"
 #include "camera.h"
 #include "close_confirm_dialog.h"
+#include "file_confirm_dialog.h"
+#include <QMimeData>
+#include <QUrl>
 #include <QToolButton>
 #include <QSettings>
 #include <QChartView>
@@ -137,6 +140,7 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
     connect(cameraButton, &QPushButton::clicked, this, &MainWindow::onCameraButtonClicked);
 
     client->mainWindow = this;      // 客户端关联主窗口
+    setAcceptDrops(true);
 
     // 加载聊天记录
     QVector<QString> msgs = dbManager.loadMessages();
@@ -260,6 +264,25 @@ void MainWindow::onSendFileButtonClicked() {
 void MainWindow::onDelaySendClicked() {
     DelaySendDialog *dialog=new DelaySendDialog(client, this);
     dialog->exec();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e) {
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *e) {
+    QList<QUrl> urls=e->mimeData()->urls();
+    if (urls.isEmpty()) return;
+
+    QString filePath=urls.first().toLocalFile();
+    if (filePath.isEmpty()) return;
+
+    FileConfirmDialog d(filePath,this);
+    if (d.exec()==QDialog::Accepted && d.isAccepted()) {
+        client->sendFile(d.getFilePath());
+    }
 }
 
 void MainWindow::onSearchButtonClicked() {

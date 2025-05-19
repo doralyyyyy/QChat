@@ -20,7 +20,7 @@ int main(int argc,char *argv[]) {
 
     Client *client=new Client("localhost",11455);
 
-    QTimer::singleShot(2000,[&](){
+    QTimer::singleShot(2000,rootObject,[=](){
         rootObject->deleteLater();
 
         // LoginWindow *l=new LoginWindow(client);

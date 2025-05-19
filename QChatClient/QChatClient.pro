@@ -22,6 +22,7 @@ SOURCES += \
     delay_send_dialog.cpp \
     email_login_window.cpp \
     feature_menu_widget.cpp \
+    file_confirm_dialog.cpp \
     login_window.cpp \
     main.cpp \
     main_window.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     delay_send_dialog.h \
     email_login_window.h \
     feature_menu_widget.h \
+    file_confirm_dialog.h \
     login_window.h \
     main_window.h \
     message.h \

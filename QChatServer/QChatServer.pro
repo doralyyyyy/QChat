@@ -19,6 +19,7 @@ SOURCES += \
     database_manager.cpp \
     delay_send_dialog.cpp \
     feature_menu_widget.cpp \
+    file_confirm_dialog.cpp \
     main.cpp \
     main_window.cpp \
     message.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     database_manager.h \
     delay_send_dialog.h \
     feature_menu_widget.h \
+    file_confirm_dialog.h \
     main_window.h \
     message.h \
     message_bubble_widget.h \

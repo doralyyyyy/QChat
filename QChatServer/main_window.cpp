@@ -5,6 +5,9 @@
 #include "record_dialog.h"
 #include "camera.h"
 #include "close_confirm_dialog.h"
+#include "file_confirm_dialog.h"
+#include <QMimeData>
+#include <QUrl>
 #include <QToolButton>
 #include <QSettings>
 #include <QChartView>
@@ -137,6 +140,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(cameraButton, &QPushButton::clicked, this, &MainWindow::onCameraButtonClicked);
 
     server = new Server(11455, this);    // 启动服务器，并监听11455端口
+    setAcceptDrops(true);
 
     QVector<QString> msgs=dbManager.loadMessages();
     for(const QString &line:std::as_const(msgs))
@@ -166,16 +170,14 @@ MainWindow::MainWindow(QWidget *parent)
             padding: 10px;
             border: none;
             border-radius: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #ff9a9e, stop:1 #fad0c4);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
             color: white;
             font-size: 16px;
             font-weight: bold;
         }
 
         QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #fbc2eb, stop:1 #a6c1ee);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
 
         QPushButton#sendButton {
@@ -202,6 +204,11 @@ MainWindow::MainWindow(QWidget *parent)
             background-color: transparent;
             color: #007bff;
             text-decoration: underline;
+        }
+
+        QToolButton {
+            background: transparent;
+            color: #000000;
         }
 
         QHBoxLayout {
@@ -255,6 +262,25 @@ void MainWindow::onSendFileButtonClicked() {
 void MainWindow::onDelaySendClicked() {
     DelaySendDialog *dialog=new DelaySendDialog(server, this);
     dialog->exec();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e) {
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *e) {
+    QList<QUrl> urls=e->mimeData()->urls();
+    if (urls.isEmpty()) return;
+
+    QString filePath=urls.first().toLocalFile();
+    if (filePath.isEmpty()) return;
+
+    FileConfirmDialog d(filePath,this);
+    if (d.exec()==QDialog::Accepted && d.isAccepted()) {
+        server->sendFile(d.getFilePath());
+    }
 }
 
 void MainWindow::onSearchButtonClicked() {

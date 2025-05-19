@@ -47,8 +47,11 @@ public:
 
     void updateMessage(const QString &message);
     void exportChatToTxt();
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
+protected:
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
 
 private slots:
     void onSendButtonClicked();
