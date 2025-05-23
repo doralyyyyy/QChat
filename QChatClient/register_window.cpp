@@ -364,4 +364,6 @@ void RegisterWindow::onVerifyClicked() {
 
     QString msg = "REGISTER:" + nick + "|" + pwd + "|" + email + "|" + code;
     client->sendNonTextMessage(msg.toUtf8());
+    client->nickname=nick;
+    client->email=email;
 }

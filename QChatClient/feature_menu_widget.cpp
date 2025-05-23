@@ -13,16 +13,14 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent) : QWidget(parent) {
             padding: 10px;
             border: none;
             border-radius: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #ff9a9e, stop:1 #fad0c4);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
             color: white;
             font-size: 18px;
             font-weight: bold;
         }
 
         QToolButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                        stop:0 #fbc2eb, stop:1 #a6c1ee);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
     )");
 

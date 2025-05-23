@@ -17,6 +17,10 @@ class MainWindow;
 class RegisterWindow;
 class LoginWindow;
 class EmailLoginWindow;
+class ChatPage;
+class FriendListPage;
+class MatchPage;
+class SettingPage;
 
 class Client : public QObject {
     Q_OBJECT
@@ -38,9 +42,16 @@ public:
     RegisterWindow *registerWindow;
     EmailLoginWindow *emailLoginWindow;
     LoginWindow *loginWindow;
+    ChatPage *chatPage;
+    FriendListPage *friendListPage;
+    MatchPage *matchPage;
+    SettingPage *settingPage;
+    QString nickname;
+    QString newNickname;
+    QString email;
+    QPixmap avatar;
+    QTcpSocket *socket;  // 与服务端的连接
 
-    void sendVerificationEmail(const QString& email);
-    void sendVerificationCode(const QString& code);
     void registerSuccess();
     void loginSuccess();
     void emailLoginSuccess();
@@ -49,6 +60,10 @@ public:
     void sendFile(const QString &filePath);
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
+    bool ifconnected();
+    QString getNickname();
+    QString getEmail();
+    QString requestAvatar(const QString &nickname);
 
 private slots:
     void onConnected();   // 客户端连接成功时的槽
@@ -56,7 +71,6 @@ private slots:
     void onDisconnected(); // 客户端断开连接时的槽
 
 private:
-    QTcpSocket *socket;  // 与服务端的连接
     QString serverHost;  // 服务端地址
     quint16 serverPort;  // 服务端端口
     DatabaseManager *dbManager;      // 操纵数据库

@@ -26,15 +26,16 @@ void TrayManager::show() {
     trayIcon->show();
 }
 
-void TrayManager::onIconActivated(QSystemTrayIcon::ActivationReason reason) {
+void TrayManager::onIconActivated(QSystemTrayIcon::ActivationReason reason){
+    qDebug() << "Restoring MainWindow, state before:" << mainWindow->windowState();
     if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
-        mainWindow->show();
-        mainWindow->raise();
-        mainWindow->activateWindow();
+        onShowWindow();
     }
 }
 
 void TrayManager::onShowWindow() {
+    mainWindow->hide(); // 强制刷新状态
+    mainWindow->setWindowState(Qt::WindowNoState);
     mainWindow->show();
     mainWindow->raise();
     mainWindow->activateWindow();

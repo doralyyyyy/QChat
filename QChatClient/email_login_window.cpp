@@ -167,6 +167,7 @@ void EmailLoginWindow::onSendCodeClicked() {
     QString msg = "EMAIL_LOGIN:" + email;
     client->nowEmail = email;
     client->sendNonTextMessage(msg);
+    client->email=email;
 }
 
 void EmailLoginWindow::onVerifyClicked() {
