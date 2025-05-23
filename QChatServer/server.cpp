@@ -1,5 +1,6 @@
 #include "server.h"
 #include "main_window.h"
+#include <QBuffer>
 
 Server::Server(quint16 port,MainWindow *mainWindow, QObject *parent)
     : QObject(parent), socket(nullptr),mainWindow(mainWindow) {
@@ -20,6 +21,12 @@ Server::~Server() {
         socket->close();
     }
     server->close();
+}
+
+void Server::sleep(int ms) {
+    QEventLoop loop;
+    QTimer::singleShot(ms, &loop, &QEventLoop::quit);
+    loop.exec();
 }
 
 void Server::onNewConnection() {
@@ -91,7 +98,11 @@ void Server::onReadyRead() {
             f.headerReceived=true;
             tryFinishFile(s);
         } else {
-            handleTextMessage(s, d);
+            QList<QByteArray> messages = d.split('\n');
+            for(const QByteArray& m : std::as_const(messages)) {
+                if(!m.trimmed().isEmpty())
+                    handleTextMessage(s, m);
+            }
         }
     } else {        // 文件可能较大，要多次获取
         f.data+=d;
@@ -99,9 +110,45 @@ void Server::onReadyRead() {
     }
 }
 
+void Server::tryFinishFile(QTcpSocket* s) {
+    FileInfo& f=fileMap[s];
+    if(f.receiving && f.headerReceived && f.data.size()>=f.expectedSize) {
+        QString subdir,saveName=f.name;
+        if(f.name.contains("_avatar")) {
+            subdir="avatars/";
+        } else {
+            subdir="received_";
+        }
+        QString base=QCoreApplication::applicationDirPath();
+        QString dir=base+"/"+subdir;
+        QDir().mkpath(dir);
+        QString fullPath=dir+saveName;
+        QFile file(fullPath);
+        qDebug()<<"尝试保存文件："<<fullPath;
+        if(file.open(QIODevice::WriteOnly)) {
+            file.write(f.data.left(f.expectedSize));
+            file.close();
+            qDebug()<<"写入成功："<<fullPath;
+            if(subdir=="avatars/") {
+                QString nickname=f.name.left(f.name.indexOf("_avatar"));
+                userDB->updateAvatarPath(nickname,fullPath);
+            } else {
+                QString content="FILE|"+f.name;
+                QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+                mainWindow->updateMessage("[" + time + "] 对方：" + content);
+                dbManager->insertMessage("对方","我",content,time);
+                qDebug()<<"收到普通文件："<<f.name;
+            }
+        } else {
+            mainWindow->updateMessage("文件保存失败："+f.name);
+            qDebug()<<"文件写入失败："<<fullPath;
+        }
+        fileMap.remove(s);
+    }
+}
+
 void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
     QString msg=QString::fromUtf8(data).trimmed();
-
     if (msg.startsWith("EMAIL:")) {                    // 收到注册时的邮件
         QString email=msg.mid(6).trimmed();
         QString code=generateCode();
@@ -111,67 +158,159 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         QString email = msg.mid(12).trimmed();
         if (!userDB->emailExists(email)) {
             socket->write("EMAIL_NOTFOUND");           // 告诉客户端邮箱不存在
+            socket->flush();
             return;
         }
         QString code = generateCode();
-        sendVerificationCodeBack(code);
+        QString nickname = userDB->getNicknameByEmail(email);
+        sendVerificationCodeBack(code,nickname);
         sendVerificationCode(email, code);
     } else if (msg.startsWith("REGISTER:")) {          // 收到注册消息
         QStringList parts=msg.mid(9).split('|');
         if (parts.size()!=4) {
             socket->write("REGISTER_FAIL");
+            socket->flush();
             return;
         }
-
         QString nick=parts[0], pwd=parts[1], email=parts[2];
-
         if (userDB->nicknameExists(nick) || userDB->emailExists(email)) {
             socket->write("REGISTER_DUPLICATE");
+            socket->flush();
             return;
         }
         if (userDB->addUser(nick, pwd, email)) {
             socket->write("REGISTER_OK");
+            socket->flush();
         } else {
             socket->write("REGISTER_FAIL");
+            socket->flush();
         }
     } else if (msg.startsWith("LOGIN:")) {           // 收到登录消息
         QStringList parts=msg.mid(6).split('|');
         if (parts.size()!=2) {
             socket->write("LOGIN_FAIL");
+            socket->flush();
             return;
         }
-
         QString id=parts[0], pwd=parts[1];
-        if (userDB->checkLogin(id, pwd)) {
-            socket->write("LOGIN_OK");
-        } else if (!userDB->nicknameExists(id)&&!userDB->emailExists(id)) {
-            socket->write("LOGIN_NOTFOUND");
+        QSqlQuery q(userDB->db);
+        q.prepare("SELECT nickname, email, password FROM users WHERE nickname=? OR email=?");
+        q.addBindValue(id);
+        q.addBindValue(id);
+        if (q.exec() && q.next()) {
+            QString nickname = q.value(0).toString();
+            QString email = q.value(1).toString();
+            QString correctPassword = q.value(2).toString();
+            if (pwd == correctPassword) {
+                QString reply = "LOGIN_SUCCESS|" + nickname + "|" + email;
+                socket->write(reply.toUtf8());
+                socket->flush();
+            } else {
+                socket->write("LOGIN_FAIL");
+                socket->flush();
+            }
         } else {
-            socket->write("LOGIN_FAIL");
+            socket->write("LOGIN_NOTFOUND");
+            socket->flush();
+        }
+    } else if (msg.startsWith("ADD_FRIEND|")) {
+        QStringList parts = msg.split("|");
+        if (parts.size() == 3) {
+            QString user = parts[1].trimmed();
+            QString friendName = parts[2].trimmed();
+            if (userDB->nicknameExists(friendName)) {
+                if (userDB->areFriends(user, friendName)) {
+                    socket->write("ALREADY_FRIENDS");
+                    socket->flush();
+                } else if (userDB->addFriend(user, friendName)) {
+                    socket->write("ADD_FRIEND_SUCCESS|"+friendName.toUtf8());
+                    socket->flush();
+                } else {
+                    socket->write("ADD_FRIEND_FAILED");
+                    socket->flush();
+                }
+            } else {
+                socket->write("FRIEND_NOT_FOUND");
+                socket->flush();
+            }
+        }
+    } else if (msg.startsWith("REMOVE_FRIEND|")) {
+        QStringList parts = msg.split("|");
+        if (parts.size() == 3) {
+            QString user = parts[1].trimmed();
+            QString friendName = parts[2].trimmed();
+            userDB->removeFriend(user, friendName);
+        }
+    } else if (msg.startsWith("GET_FRIEND_LIST|")) {
+        QString user = msg.mid(QString("GET_FRIEND_LIST|").length()).trimmed();
+        QStringList list = userDB->getFriends(user);
+        QString result = "FRIEND_LIST|"+list.join(",")+'\n';
+        socket->write(result.toUtf8());
+        socket->flush();
+    } else if (msg.startsWith("GET_AVATAR|")) {
+        QString name=msg.mid(QString("GET_AVATAR|").length()).trimmed();
+        QString path=userDB->getAvatar(name).trimmed();
+        QByteArray data;
+        QFile file(path);
+        if (file.exists()) {
+            qDebug() << "Avatar file exists:" << path;
+            if (file.open(QIODevice::ReadOnly)) {
+                data = file.readAll();
+                qDebug() << "Avatar file opened and read successfully";
+            } else {
+                qDebug() << "Failed to open avatar file:" << path;
+            }
+        } else {
+            qDebug() << "Avatar file does not exist:" << path;
+        }
+        if (!data.isEmpty()) {
+            QString header = "FILE:" + name + "_avatar.png:" + QString::number(data.size()) + '\n';
+            socket->write(header.toUtf8() + data);
+            socket->flush();
+            sleep(1000);
+            socket->write("PASS");
+            socket->flush();
+        } else {
+            qDebug() << "Failed to load avatar from path:" << path;
+        }
+    } else if (msg.startsWith("GET_SELF_AVATAR|")) {
+        QString name=msg.mid(QString("GET_SELF_AVATAR|").length()).trimmed();
+        QString path=userDB->getAvatar(name).trimmed();
+        QByteArray data;
+        QFile file(path);
+        if (file.exists()) {
+            qDebug() << "Avatar file exists:" << path;
+            if (file.open(QIODevice::ReadOnly)) {
+                data = file.readAll();
+                qDebug() << "Avatar file opened and read successfully";
+            } else {
+                qDebug() << "Failed to open avatar file:" << path;
+            }
+        } else {
+            qDebug() << "Avatar file does not exist:" << path;
+        }
+        if (!data.isEmpty()) {
+            QString header = "FILE:" + name + "_self_avatar.png:" + QString::number(data.size()) + '\n';
+            socket->write(header.toUtf8() + data + '\n');
+            socket->flush();
+        } else {
+            qDebug() << "Failed to load avatar from path:" << path;
+        }
+    } else if (msg.startsWith("CHANGE_NICKNAME|")) {
+        QStringList parts = msg.mid(16).split('|');
+        QString oldName = parts[0].trimmed();
+        QString newName = parts[1].trimmed();
+        if (userDB->changeNickname(oldName, newName)) {
+            socket->write("CHANGE_NICKNAME_OK");
+            socket->flush();
+        } else {
+            socket->write("CHANGE_NICKNAME_FAIL");
+            socket->flush();
         }
     } else {
         QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
         mainWindow->updateMessage("[" + time + "] 对方：" + msg);
         dbManager->insertMessage("对方", "我", msg, time);
-    }
-}
-
-void Server::tryFinishFile(QTcpSocket* s) {               // 先判断文件获取是否结束，若结束，进行后处理
-    FileInfo& f=fileMap[s];
-    if (f.receiving && f.headerReceived && f.data.size() >= f.expectedSize) {
-        QFile file(QCoreApplication::applicationDirPath() + "/received_" + f.name);
-        if (file.open(QIODevice::WriteOnly)) {
-            file.write(f.data.left(f.expectedSize));
-            file.close();
-
-            QString content="FILE|"+f.name;
-            QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-            mainWindow->updateMessage("[" + time + "] 对方：" + content);
-            dbManager->insertMessage("对方","我",content,time);     // 标记为文件后存入数据库
-        } else {
-            mainWindow->updateMessage("文件保存失败：" + f.name);
-        }
-        fileMap.remove(s);
     }
 }
 
@@ -219,9 +358,9 @@ void Server::sendVerificationCode(const QString &email, const QString &code) {  
     }
 }
 
-void Server::sendVerificationCodeBack(const QString &code) {   // 把验证码发回客户端
+void Server::sendVerificationCodeBack(const QString &code,const QString &nickname) {   // 把验证码发回客户端
     if (socket&&socket->state() == QTcpSocket::ConnectedState) {
-        QString msg  = "CODE:" + code + "\n";
+        QString msg  = "CODE:"+code+"|"+nickname+"\n";
         socket->write(msg.toUtf8());
         socket->flush();        //确保消息被立即发送
     }

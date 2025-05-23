@@ -35,11 +35,12 @@ public:
     QString user="server";
 
     void sendVerificationCode(const QString &email, const QString &code);
-    void sendVerificationCodeBack(const QString &code);
+    void sendVerificationCodeBack(const QString &code,const QString &nickname="");
     void sendMessage(const QString &message);
     void sendFile(const QString &filePath);
     void handleTextMessage(QTcpSocket *socket, const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
+    void sleep(int ms);
     QString generateCode();
 
 private slots:

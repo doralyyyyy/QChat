@@ -1,25 +1,39 @@
-#ifndef USER_AUTH_DATABASE_MANAGER_H
-#define USER_AUTH_DATABASE_MANAGER_H
+#ifndef USERAUTHDATABASEMANAGER_H
+#define USERAUTHDATABASEMANAGER_H
 
-#include <QString>
+#include <QObject>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QVariant>
-#include <QDebug>
 #include <QCoreApplication>
+#include <QDebug>
 
-class UserAuthDatabaseManager {
+class UserAuthDatabaseManager : public QObject {
+    Q_OBJECT
 public:
-    UserAuthDatabaseManager();
+    explicit UserAuthDatabaseManager(QObject *parent=nullptr);
+
     bool addUser(const QString &nickname,const QString &password,const QString &email);
     bool checkLogin(const QString &id,const QString &password);
     bool emailExists(const QString &email);
     bool nicknameExists(const QString &nickname);
+    QString getNicknameByEmail(const QString&e);
+
+    int getUserId(const QString &nickname);
+    QString getAvatar(const QString &nickname);
+    QList<QString> getFriends(const QString &nickname);
+
+    bool areFriends(const QString &user, const QString &friendName);
+    bool updateUserInfo(const QString &nickname,const QString &newNickname,const QString &newPassword,const QString &newAvatar);
+    bool addFriend(const QString &user1,const QString &user2);
+    bool removeFriend(const QString &user1,const QString &user2);
+    bool changeNickname(const QString& oldName, const QString& newName);
+    bool updateAvatarPath(const QString& nickname, const QString& path);
+
+    QSqlDatabase db;
 
 private:
-    QSqlDatabase db;
     void init();
 };
 
-#endif
+#endif // USERAUTHDATABASEMANAGER_H
