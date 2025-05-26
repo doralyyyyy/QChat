@@ -35,6 +35,70 @@ void FriendListPage::setupUI() {
     layout->addWidget(addButton);
     layout->addWidget(friendList);
     setLayout(layout);
+
+    this->setStyleSheet(R"(
+    QWidget {
+        background-color: #f0f0f0; /* 页面背景色 */
+    }
+
+    QListWidget {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 5px;
+    }
+
+    QListWidget::item {
+        padding: 8px;
+        margin: 4px;
+        border-radius: 6px;
+        color: #000000;
+    }
+
+    QListWidget::item:hover {
+        background-color: #fbc2eb;
+        color: white;
+    }
+
+    QPushButton {
+        padding: 10px;
+        border: none;
+        border-radius: 12px;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #ff9a9e, stop:1 #fad0c4);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    QPushButton:hover {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #fbc2eb, stop:1 #a6c1ee);
+    }
+
+    QMenu {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 4px;
+    }
+
+    QMenu::item {
+        padding: 10px 20px;
+        color: #555;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+
+    QMenu::item:selected {
+        background-color: #fbc2eb;
+        color: white;
+    }
+
+    QMenu::item:pressed {
+        background-color: #a6c1ee;
+    }
+)");
 }
 
 void FriendListPage::getFriendList() {
@@ -66,18 +130,56 @@ void FriendListPage::updateAvatar(const QString &nickname, const QString &path) 
 
 void FriendListPage::updateListDisplay() {
     friendList->clear();
-    qDebug()<<"1";
+    friendList->setFocusPolicy(Qt::NoFocus);  // 去除焦点框
     for (const QString &name : std::as_const(friendListData)) {
-        qDebug()<<"2";
-        QListWidgetItem *item = new QListWidgetItem(name);
+        // 判断状态
+        QString status = (name == "Server")?"online":"offline";
+
+        // 获取图标字符 + 中文文本
+        QString icon, text;
+        if(status == "online") {
+            icon = "●";
+            text = "在线";
+        } else if(status == "offline") {
+            icon = "○";
+            text = "离线";
+        } else if(status == "busy") {
+            icon = "❗";
+            text = "忙碌";
+        } else if(status == "away") {
+            icon = "◐";
+            text = "离开";
+        } else if(status == "invisible") {
+            icon = "◑";
+            text = "隐身";
+        } else {
+            icon = "?";
+            text = "未知";
+        }
+
+        // 文字设置
+        QFont font;
+        font.setPointSize(16);
+        font.setBold(true);
+        QFontMetrics fm(font);
+        int maxWidth=450; // 最大昵称宽度
+        int nameWidth=fm.horizontalAdvance(name);
+        int spaceWidth=fm.horizontalAdvance(" ");
+        int neededSpaces=(maxWidth-nameWidth)/spaceWidth;
+        QString fullText="  "+name+QString(" ").repeated(neededSpaces)+icon+" "+text;
+        QListWidgetItem *item = new QListWidgetItem(fullText);
+        item->setFont(font);
+
         if (avatarMap.contains(name)) {
-            qDebug()<<"3";
+            qDebug()<<name+"c";
             QPixmap pix(avatarMap[name]);
             if (!pix.isNull()) {
-                qDebug()<<"4";
-                item->setIcon(QIcon(pix.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+                qDebug()<<name+"d";
+                friendList->setIconSize(QSize(44,44));
+                item->setIcon(QIcon(pix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
             }
         }
+        item->setSizeHint(QSize(64, 64));
         friendList->addItem(item);
     }
 }
@@ -90,7 +192,7 @@ void FriendListPage::showContextMenu(const QPoint &pos) {
     QAction *removeAction = menu.addAction("删除好友");
     QAction *selectedAction = menu.exec(friendList->viewport()->mapToGlobal(pos));
     if (selectedAction == removeAction) {
-        QString nickname = item->text();
+        QString nickname = item->text().simplified().split(' ').value(0);
         if(removeFriend(nickname)) delete item;
     }
 }
@@ -110,12 +212,72 @@ void FriendListPage::addFriend(const QString &nickname) {
 
 bool FriendListPage::removeFriend(const QString &nickname) {
     if(nickname=="Server"){
-        QMessageBox::warning(nullptr, "错误", "无法删除服务器");
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("错误");
+        msgBox->setText("无法删除服务器");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
         return false;
     }
     friendListData.removeAll(nickname);
     QString msg = "REMOVE_FRIEND|" + client->nickname + "|" + nickname;
     client->sendNonTextMessage(msg);
-    QMessageBox::information(nullptr, "提示", "删除成功");
+    QMessageBox *msgBox = new QMessageBox(this);
+    msgBox->setWindowTitle("提示");
+    msgBox->setText("删除成功");
+    msgBox->setIcon(QMessageBox::Information);
+    msgBox->setStandardButtons(QMessageBox::Ok);
+
+    msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+    msgBox->exec();
     return true;
 }

@@ -1,5 +1,5 @@
-#ifndef CHAT_PAGE_H
-#define CHAT_PAGE_H
+#ifndef CHAT_PAGE2_H
+#define CHAT_PAGE2_H
 
 #include <QTextEdit>
 #include <QLineEdit>
@@ -29,18 +29,17 @@
 #include "message.h"
 #include "message_context_menu_handler.h"
 
-class ChatPage : public QWidget
+class ChatPage2 : public QWidget
 {
     Q_OBJECT
 
 public:
-    ChatPage(Client *client, QWidget *parent = nullptr);
-    ~ChatPage();
+    ChatPage2(Client *client, QWidget *parent = nullptr);
+    ~ChatPage2();
 
-    void updateMessage(const QString &message);
     void exportChatToTxt();
     void refresh();
-    void showEmojiAnimation(const QString &emoji);
+    void popMessageBox();
 
     QLabel *chatTitleLabel;
 
@@ -61,14 +60,6 @@ private slots:
     void onGenerateTimelineRequested();
 
 private:
-    QMap<QString, QString> keywordMap={
-        {"爱你","❤️"},{"我爱你","❤️"},{"喜欢你","❤️"},{"想你","🥺"},{"想见你","🥺"},{"生气","😡"},{"发火","😠"},{"气死我了","😤"},{"笑死","😂"},
-        {"搞笑","🤣"},{"无语","🙄"},{"赞","👍"},{"棒","👍"},{"鼓掌","👏"},{"加油","💪"},{"抱抱","🤗"},{"哭了","😭"},{"泪目","😢"},{"好累","😩"},
-        {"晚安","🌙"},{"早安","☀️"},{"吃饭了吗","🍚"},{"吃饭","🍽️"},{"生日快乐","🎂"},{"新年快乐","🎉"},{"节日快乐","🎊"},{"圣诞快乐","🎄"},
-        {"好美","😍"},{"好帅","😎"},{"摸鱼","🐟"},{"下班","🏃"},{"溜了","🏃"},{"出发","✈️"},{"到家","🏠"},{"回家","🏠"},{"拥抱","🫂"},
-        {"亲亲","😘"},{"么么哒","😘"},{"心碎","💔"},{"震惊","😱"},{"我晕","😵"},{"晕了","😵"},{"睡觉","🛌"},{"再见","👋"},{"拜拜","👋"}
-    };
-    bool ifinit;
     QListWidget *listWidget;
     QLineEdit *inputField;
     QPushButton *cameraButton;

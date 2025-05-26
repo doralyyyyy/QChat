@@ -18,6 +18,7 @@ SOURCES += \
     avatar_cropper.cpp \
     camera.cpp \
     chat_page.cpp \
+    chat_page2.cpp \
     client.cpp \
     close_confirm_dialog.cpp \
     database_manager.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     avatar_cropper.h \
     camera.h \
     chat_page.h \
+    chat_page2.h \
     client.h \
     close_confirm_dialog.h \
     database_manager.h \

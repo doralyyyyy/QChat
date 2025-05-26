@@ -1,5 +1,4 @@
-#include "chat_page.h"
-#include "message_bubble_widget.h"
+#include "chat_page2.h"
 #include "feature_menu_widget.h"
 #include "record_dialog.h"
 #include "camera.h"
@@ -17,14 +16,10 @@
 #include <QBarSet>
 #include <QBarSeries>
 #include <QBarCategoryAxis>
-#include <QPropertyAnimation>
-#include <QGraphicsOpacityEffect>
-#include <QParallelAnimationGroup>
 
-ChatPage::ChatPage(Client *client, QWidget *parent)
+ChatPage2::ChatPage2(Client *client, QWidget *parent)
     : QWidget(parent), client(client) {
     this->setWindowTitle("聊天界面");
-    client->chatPage = this;      // 客户端关联主窗口
 
     // 创建聊天记录显示区
     listWidget = new QListWidget(this);
@@ -74,8 +69,8 @@ ChatPage::ChatPage(Client *client, QWidget *parent)
     menuButton->setMenu(menu);
     menuButton->setPopupMode(QToolButton::InstantPopup);
 
-    connect(sendFileAction, &QAction::triggered, this, &ChatPage::onSendFileButtonClicked);
-    connect(delaySendAction, &QAction::triggered, this, &ChatPage::onDelaySendClicked);
+    connect(sendFileAction, &QAction::triggered, this, &ChatPage2::onSendFileButtonClicked);
+    connect(delaySendAction, &QAction::triggered, this, &ChatPage2::onDelaySendClicked);
 
     // 创建其他按钮
     recordButton = new QPushButton("语音转文字", this);
@@ -116,7 +111,7 @@ ChatPage::ChatPage(Client *client, QWidget *parent)
     QToolBar *toolbar=menuWidget->getToolBar();
 
     // 顶部显示对方名字
-    chatTitleLabel = new QLabel("Server", this);
+    chatTitleLabel = new QLabel("KKK", this);
     chatTitleLabel->setStyleSheet("font-size: 24px; font-weight: bold;");
 
     // 顶部横向布局：菜单栏 + 拉伸 + 搜索按钮
@@ -133,26 +128,19 @@ ChatPage::ChatPage(Client *client, QWidget *parent)
     // 插入主布局顶部
     mainLayout->insertWidget(0,topRightWidget);
 
-    connect(menuWidget, &FeatureMenuWidget::wordCloudRequested, this, &ChatPage::onWordCloudRequested);
-    connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &ChatPage::onRelationAnalysisRequested);
-    connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &ChatPage::onExportChatToPdfRequested);
-    connect(menuWidget, &FeatureMenuWidget::generateTimelineRequested, this, &ChatPage::onGenerateTimelineRequested);
+    connect(menuWidget, &FeatureMenuWidget::wordCloudRequested, this, &ChatPage2::onWordCloudRequested);
+    connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &ChatPage2::onRelationAnalysisRequested);
+    connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &ChatPage2::onExportChatToPdfRequested);
+    connect(menuWidget, &FeatureMenuWidget::generateTimelineRequested, this, &ChatPage2::onGenerateTimelineRequested);
 
     // 连接控件与槽函数
-    connect(inputField, &QLineEdit::returnPressed, this, &ChatPage::onSendButtonClicked);
-    connect(sendButton, &QPushButton::clicked, this, &ChatPage::onSendButtonClicked);
-    connect(searchButton, &QPushButton::clicked, this, &ChatPage::onSearchButtonClicked);
-    connect(recordButton, &QPushButton::clicked, this, &ChatPage::onRecordButtonClicked);
-    connect(cameraButton, &QPushButton::clicked, this, &ChatPage::onCameraButtonClicked);
+    connect(inputField, &QLineEdit::returnPressed, this, &ChatPage2::onSendButtonClicked);
+    connect(sendButton, &QPushButton::clicked, this, &ChatPage2::onSendButtonClicked);
+    connect(searchButton, &QPushButton::clicked, this, &ChatPage2::onSearchButtonClicked);
+    connect(recordButton, &QPushButton::clicked, this, &ChatPage2::onRecordButtonClicked);
+    connect(cameraButton, &QPushButton::clicked, this, &ChatPage2::onCameraButtonClicked);
 
     setAcceptDrops(true);
-
-    // 加载聊天记录
-    ifinit=0;
-    QVector<QString> msgs = dbManager.loadMessages();
-    for (const QString &line : std::as_const(msgs))
-        updateMessage(line);
-    ifinit=1;
 
     // 设置界面样式
     setStyleSheet(R"(
@@ -226,124 +214,66 @@ ChatPage::ChatPage(Client *client, QWidget *parent)
     )");
 }
 
-void ChatPage::updateMessage(const QString &msg) {
-    int timeEnd = msg.indexOf(']');
-    int nameEnd = msg.indexOf("：", timeEnd);
-    if (timeEnd == -1 || nameEnd == -1) return;
+void ChatPage2::popMessageBox(){
+    QMessageBox *msgBox = new QMessageBox(this);
+    msgBox->setWindowTitle("错误");
+    msgBox->setText("对方离线中");
+    msgBox->setIcon(QMessageBox::Warning);
+    msgBox->setStandardButtons(QMessageBox::Ok);
 
-    QString time = msg.left(timeEnd + 1); // [时间]
-    QString sender = msg.mid(timeEnd + 1, nameEnd - timeEnd - 1).trimmed(); // 发件人
-    QString content = msg.mid(nameEnd + 1); // 内容（支持带冒号）
-
-    bool isSelf = (sender == "我");
-
-    messages.append(Message(time, sender, content));
-
-    MessageBubbleWidget *messageBubble = new MessageBubbleWidget(time, sender, content, isSelf);
-
-    QListWidgetItem *item = new QListWidgetItem(listWidget);
-    item->setSizeHint(messageBubble->sizeHint());
-    item->setTextAlignment(isSelf ? Qt::AlignRight : Qt::AlignLeft);
-
-    // 存储消息的内容到 QListWidgetItem 的 data 中
-    item->setData(Qt::UserRole, content);
-
-    listWidget->addItem(item);
-    listWidget->setItemWidget(item, messageBubble);
-    listWidget->scrollToBottom();  // 始终滚动到最底部
-
-    if(ifinit){
-        for(auto it=keywordMap.begin();it!=keywordMap.end();++it){   // 触发关键词动画
-            if(msg.contains(it.key())){
-                showEmojiAnimation(it.value());
-                break;
-            }
+    msgBox->setStyleSheet(R"(
+        QMessageBox {
+            background-color: #ffe6e6;
+            border-radius: 15px;
+            padding: 15px;
         }
-    }
+        QLabel {
+            font-size: 14px;
+            color: #ff4444;
+        }
+        QPushButton {
+            background-color: #ff7f7f;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            padding: 8px;
+        }
+        QPushButton:hover {
+            background-color: #ff4c4c;
+        }
+    )");
+    msgBox->exec();
 }
 
-void ChatPage::refresh(){
+void ChatPage2::refresh(){
     listWidget->scrollToBottom();
     listWidget->viewport()->update();
 }
 
-void ChatPage::showEmojiAnimation(const QString &emoji){
-    for(int i=0;i<6;++i){
-        QLabel *e=new QLabel(emoji,this);
-        e->setStyleSheet("font-size: 36px; background: transparent;");
-        e->adjustSize();
-
-        int startX=width()/2-250+(rand()&500);
-        int startY=height()/2-100+(rand()&300);
-        e->move(startX,startY);
-        e->show();
-
-        // 上浮动画 + 左右摇摆
-        QPropertyAnimation *aPos=new QPropertyAnimation(e,"pos",this);
-        aPos->setDuration(2000);
-        aPos->setStartValue(QPoint(startX,startY));
-        aPos->setEndValue(QPoint(startX+rand()%40-20,startY-150-rand()%50));
-        aPos->setEasingCurve(QEasingCurve::OutCubic);
-
-        // 透明度动画
-        QGraphicsOpacityEffect *op=new QGraphicsOpacityEffect(e);
-        e->setGraphicsEffect(op);
-        QPropertyAnimation *aOp=new QPropertyAnimation(op,"opacity",this);
-        aOp->setDuration(2000);
-        aOp->setStartValue(1.0);
-        aOp->setEndValue(0.0);
-
-        // 绑定释放
-        connect(aOp,&QPropertyAnimation::finished,e,&QLabel::deleteLater);
-
-        // 并行动画组
-        QParallelAnimationGroup *group=new QParallelAnimationGroup(this);
-        group->addAnimation(aPos);
-        group->addAnimation(aOp);
-        group->start(QAbstractAnimation::DeleteWhenStopped);
-    }
+void ChatPage2::onSendButtonClicked() {
+    popMessageBox();
 }
 
-void ChatPage::onSendButtonClicked() {
-    QString message = inputField->text();  // 获取输入框中的文本
-    if (!message.isEmpty()) {
-        client->sendMessage(message);
-        inputField->clear();    // 清空输入框
-    }
+void ChatPage2::onSendFileButtonClicked() {
+    popMessageBox();
 }
 
-void ChatPage::onSendFileButtonClicked() {
-    QString filePath = QFileDialog::getOpenFileName(this, tr("选择文件"));
-    if (!filePath.isEmpty()) {
-        client->sendFile(filePath);
-    }
+void ChatPage2::onDelaySendClicked() {
+    popMessageBox();
 }
 
-void ChatPage::onDelaySendClicked() {
-    DelaySendDialog *dialog=new DelaySendDialog(client, this);
-    dialog->exec();
-}
-
-void ChatPage::dragEnterEvent(QDragEnterEvent *e) {
+void ChatPage2::dragEnterEvent(QDragEnterEvent *e) {
     if (e->mimeData()->hasUrls()) {
         e->acceptProposedAction();
     }
 }
 
-void ChatPage::dropEvent(QDropEvent *e) {
-    QList<QUrl> urls=e->mimeData()->urls();
-    if (urls.isEmpty()) return;
-
-    QString filePath=urls.first().toLocalFile();
-    if (filePath.isEmpty()) return;
-
-    FileConfirmDialog d(filePath,this);
-    if (d.exec()==QDialog::Accepted && d.isAccepted()) {
-        client->sendFile(d.getFilePath());
-    }
+void ChatPage2::dropEvent(QDropEvent *e) {
+    if(e) popMessageBox();
 }
 
-void ChatPage::onSearchButtonClicked() {
+void ChatPage2::onSearchButtonClicked() {
     if (searchWidget->isVisible()) {
         searchWidget->hideAll();
     } else {
@@ -351,7 +281,7 @@ void ChatPage::onSearchButtonClicked() {
     }
 }
 
-void ChatPage::exportChatToTxt() {      // 把聊天内容打包成 chat_log.txt
+void ChatPage2::exportChatToTxt() {      // 把聊天内容打包成 chat_log.txt
     QFile file("chat_log.txt");
     if(file.open(QIODevice::WriteOnly|QIODevice::Text)) {
         QTextStream out(&file);
@@ -364,7 +294,7 @@ void ChatPage::exportChatToTxt() {      // 把聊天内容打包成 chat_log.txt
     }
 }
 
-void ChatPage::onWordCloudRequested() {
+void ChatPage2::onWordCloudRequested() {
     exportChatToTxt();
     QString scriptPath = QCoreApplication::applicationDirPath() + "/../../../wordcloud_gen.py";
 
@@ -379,24 +309,25 @@ void ChatPage::onWordCloudRequested() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 
@@ -416,24 +347,25 @@ void ChatPage::onWordCloudRequested() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 
@@ -441,7 +373,7 @@ void ChatPage::onWordCloudRequested() {
     }
 }
 
-void ChatPage::onRelationAnalysisRequested() {
+void ChatPage2::onRelationAnalysisRequested() {
     exportChatToTxt(); // 导出聊天记录到 chat_log.txt
 
     QString scriptPath = QCoreApplication::applicationDirPath() + "/../../../relationship_ai_analyzer.py";
@@ -491,7 +423,7 @@ void ChatPage::onRelationAnalysisRequested() {
     }
 }
 
-void ChatPage::onExportChatToPdfRequested() {
+void ChatPage2::onExportChatToPdfRequested() {
     QTextDocument document;
 
     // 遍历 messages 列表，将每条消息的内容、发送者和时间拼接成格式化文本
@@ -520,7 +452,7 @@ void ChatPage::onExportChatToPdfRequested() {
     QMessageBox::information(this, "成功", "聊天记录已成功导出为 PDF");
 }
 
-void ChatPage::onGenerateTimelineRequested() {
+void ChatPage2::onGenerateTimelineRequested() {
     if (messages.isEmpty()) {
         QMessageBox::warning(this, "提示", "暂无消息记录，无法生成时间轴。");
         return;
@@ -571,7 +503,7 @@ void ChatPage::onGenerateTimelineRequested() {
     view->show();
 }
 
-void ChatPage::onRecordButtonClicked() {
+void ChatPage2::onRecordButtonClicked() {
     RecordDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
         QString filePath = dlg.getAudioFilePath();
@@ -603,24 +535,25 @@ void ChatPage::onRecordButtonClicked() {
 
             msgBox->setStyleSheet(R"(
                 QMessageBox {
-                    background-color: #ffe6e6;
+                    background-color: #fff3f3;
                     border-radius: 15px;
-                    padding: 15px;
+                    padding: 20px;
+                    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
                 }
                 QLabel {
                     font-size: 14px;
                     color: #ff4444;
                 }
                 QPushButton {
-                    background-color: #ff7f7f;
+                    background-color: #ff9a9e;
                     border: none;
                     border-radius: 10px;
-                    color: white;
-                    font-size: 14px;
                     padding: 8px;
+                    font-weight: bold;
+                    color: white;
                 }
                 QPushButton:hover {
-                    background-color: #ff4c4c;
+                    background-color: #fbc2eb;
                 }
             )");
 
@@ -629,10 +562,9 @@ void ChatPage::onRecordButtonClicked() {
     }
 }
 
-void ChatPage::onCameraButtonClicked(){
-    Camera *cam=new Camera(client,this);
-    cam->show();
+void ChatPage2::onCameraButtonClicked(){
+    popMessageBox();
 }
 
-ChatPage::~ChatPage() {
+ChatPage2::~ChatPage2() {
 }

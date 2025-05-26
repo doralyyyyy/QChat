@@ -7,7 +7,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-
+#include "chat_page2.h"
 #include "client.h"
 #include "chat_page.h"
 #include "friend_list_page.h"
@@ -40,6 +40,8 @@ private:
     QPushButton *settingButton;
     TrayManager *trayManager;
     ChatPage *chatPage;
+    ChatPage2 *chatPage2;
+    QString chatPartner;
     FriendListPage *friendListPage;
     MatchPage *matchPage;
     SettingPage *settingPage;

@@ -1,10 +1,11 @@
-#ifndef MATCHPAGE_H
-#define MATCHPAGE_H
+#ifndef MATCH_PAGE_H
+#define MATCH_PAGE_H
 
 #include <QWidget>
-#include <QVBoxLayout>
+#include <QPushButton>
 #include <QLabel>
-#include "client.h"
+
+class Client; // 前向声明，避免循环依赖
 
 class MatchPage : public QWidget {
     Q_OBJECT
@@ -12,8 +13,25 @@ class MatchPage : public QWidget {
 public:
     explicit MatchPage(Client *client, QWidget *parent = nullptr);
 
+    void sleep(int ms);
+    void stopMatching();
+    void matchingFinished(const QString& result);
+    void addFriend();
+
+private slots:
+    void startMatching();
+    void cancelMatching();
+
 private:
+    QString buttonStyle() const;
+
     Client *client;
+
+    QLabel *statusLabel;
+    QPushButton *matchButton;
+    QPushButton *cancelButton;
+    QPushButton *addFriendButton;
+    QString lastMatchedUser;
 };
 
-#endif // MATCHPAGE_H
+#endif // MATCH_PAGE_H

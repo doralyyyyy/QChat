@@ -18,6 +18,7 @@ public:
 private slots:
     void changeNickname();
     void changeAvatar();
+    void changeInterest();
 
 private:
     Client *client;
@@ -25,9 +26,11 @@ private:
     QLabel *avatarLabel;
     QLabel *nicknameLabel;
     QLabel *emailLabel;
+    QLabel *interestLabel;
 
     QPushButton *changeNicknameButton;
     QPushButton *changeAvatarButton;
+    QPushButton *changeInterestButton;
 };
 
 #endif // SETTING_PAGE_H

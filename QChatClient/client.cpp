@@ -51,7 +51,37 @@ void Client::sendMessage(const QString &message) {
         chatPage->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
         dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
     } else {
-        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
+        QMessageBox *msgBox = new QMessageBox(nullptr);
+        msgBox->setWindowTitle("提示");
+        msgBox->setText("发送失败，请检查您的网络连接");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
     }
 }
 
@@ -60,7 +90,37 @@ void Client::sendNonTextMessage(const QString &message) {    // 发送无需被�
         socket->write(message.toUtf8());
         socket->flush();        //确保消息被立即发送
     } else {
-        QMessageBox::warning(nullptr, "提示", "通信失败，请检查您的网络连接！");
+        QMessageBox *msgBox = new QMessageBox(nullptr);
+        msgBox->setWindowTitle("提示");
+        msgBox->setText("通信失败，请检查您的网络连接");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
     }
 }
 
@@ -91,7 +151,37 @@ void Client::sendFile(const QString& filePath) {
             }
         }
     } else {
-        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
+        QMessageBox *msgBox = new QMessageBox(nullptr);
+        msgBox->setWindowTitle("提示");
+        msgBox->setText("发送失败，请检查您的网络连接");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
     }
 }
 
@@ -116,7 +206,7 @@ void Client::onReadyRead() {
             tryFinishFile(s);
         } else {
         QList<QByteArray> messages = d.split('\n');
-        for(const QByteArray& m : messages) {
+        for(const QByteArray& m : std::as_const(messages)) {
             if(!m.trimmed().isEmpty())
                 handleTextMessage(m);
         }
@@ -135,6 +225,11 @@ void Client::tryFinishFile(QTcpSocket* s) {
             subdir="avatars/";
         } else {
             subdir="received_";
+        }
+        int sepIndex=saveName.indexOf("|");
+        if(sepIndex!=-1){
+            interest=saveName.left(sepIndex);
+            saveName=saveName.mid(sepIndex+1);
         }
         QString base=QCoreApplication::applicationDirPath();
         QString dir=base+"/"+subdir;
@@ -176,15 +271,51 @@ void Client::tryFinishFile(QTcpSocket* s) {
     }
 }
 
+void Client::showStyledMessageBox(const QString& title, const QString& text, QMessageBox::Icon icon) {
+    QMessageBox *msgBox = new QMessageBox(nullptr);
+    msgBox->setWindowTitle(title);
+    msgBox->setText(text);
+    msgBox->setIcon(icon);
+    msgBox->setStandardButtons(QMessageBox::Ok);
+
+    msgBox->setStyleSheet(R"(
+        QMessageBox {
+            background-color: #fff3f3;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        QLabel {
+            font-size: 14px;
+            color: #ff4444;
+        }
+        QPushButton {
+            background-color: #ff9a9e;
+            border: none;
+            border-radius: 10px;
+            padding: 8px;
+            font-weight: bold;
+            color: white;
+        }
+        QPushButton:hover {
+            background-color: #fbc2eb;
+        }
+    )");
+
+    msgBox->exec();
+    delete msgBox;
+}
+
+
 void Client::handleTextMessage(const QByteArray& data) {
     QString msg = QString::fromUtf8(data).trimmed();
     qDebug()<<msg;
     if (msg=="REGISTER_OK") {                              // 收到注册反馈时
         registerSuccess();
     } else if (msg=="REGISTER_FAIL") {
-        QMessageBox::warning(nullptr,"注册失败","注册失败，请重试");
+        showStyledMessageBox("注册失败","注册失败，请重试",QMessageBox::Warning);
     } else if (msg=="REGISTER_DUPLICATE") {
-        QMessageBox::warning(nullptr,"注册失败","昵称或邮箱已被使用");
+        showStyledMessageBox("注册失败","昵称或邮箱已被使用",QMessageBox::Warning);
     } else if (msg.startsWith("LOGIN_SUCCESS|")) {     // 收到登录反馈时
         QStringList parts = msg.split("|");
         if (parts.size() >= 3) {
@@ -193,30 +324,30 @@ void Client::handleTextMessage(const QByteArray& data) {
             loginSuccess();
         }
     } else if (msg=="LOGIN_NOTFOUND") {
-        QMessageBox::warning(nullptr,"登录失败","该昵称/邮箱不存在");
+        showStyledMessageBox("登录失败","该昵称/邮箱不存在",QMessageBox::Warning);
     } else if (msg=="LOGIN_FAIL") {
-        QMessageBox::warning(nullptr,"登录失败","密码错误");
+        showStyledMessageBox("登录失败","密码错误",QMessageBox::Warning);
     } else if (msg.startsWith("CODE:")) {                    // 收到的是验证码时
-        QMessageBox::information(nullptr, "提示", "验证码已发送至："+nowEmail);
+        showStyledMessageBox("提示", "验证码已发送至："+nowEmail,QMessageBox::Information);
         QString payload=msg.mid(QString("CODE:").length()).trimmed();
         QStringList parts=payload.split("|");
         code=parts[0];
         if(parts[1]!="") nickname=parts[1];
     } else if (msg == "EMAIL_NOTFOUND") {                        // 收到邮箱验证码登录反馈时
-        QMessageBox::warning(nullptr, "错误", "该邮箱尚未注册");
+        showStyledMessageBox( "错误", "该邮箱尚未注册",QMessageBox::Warning);
     } else if (msg=="FRIEND_NOT_FOUND") {
-        QMessageBox::warning(nullptr, "错误", "未找到该用户");
+        showStyledMessageBox("错误", "未找到该用户",QMessageBox::Warning);
     } else if (msg.startsWith("ADD_FRIEND_SUCCESS|")) {
         QString friendName=msg.mid(QString("ADD_FRIEND_SUCCESS|").length()).trimmed();
         friendListPage->friendListData.append(friendName);
         QString msg="GET_AVATAR|"+friendName+'\n';
         qDebug()<<msg;
         sendNonTextMessage(msg);
-        QMessageBox::information(nullptr, "提示", "好友已添加");
+        showStyledMessageBox("提示", "好友已添加",QMessageBox::Information);
     } else if (msg=="ALREADY_FRIENDS") {
-        QMessageBox::warning(nullptr, "错误", "好友已存在");
+        showStyledMessageBox( "错误", "好友已存在",QMessageBox::Warning);
     } else if (msg=="ADD_FRIEND_FAILED") {
-        QMessageBox::warning(nullptr, "错误", "不能添加自己为好友");
+        showStyledMessageBox( "错误", "不能添加自己为好友",QMessageBox::Warning);
     } else if (msg.startsWith("FRIEND_LIST|")){
         QString listStr=msg.mid(QString("FRIEND_LIST|").length());
         QStringList names=listStr.split(",",Qt::SkipEmptyParts);
@@ -225,7 +356,15 @@ void Client::handleTextMessage(const QByteArray& data) {
         nickname=newNickname;
         settingPage->updateUserInfo();
     } else if (msg=="CHANGE_NICKNAME_FAIL") {
-        QMessageBox::warning(nullptr, "错误", "该昵称已存在");
+        showStyledMessageBox( "错误", "该昵称已存在",QMessageBox::Warning);
+    } else if (msg.startsWith("MATCH_RESULT|")) {
+        QStringList parts=msg.split("|");
+        QString matchedUser=parts[1];
+        QString matchedInterest=parts[2];
+        QString result="匹配成功!\n对方昵称: "+matchedUser+"\n兴趣: "+matchedInterest;
+        matchPage->matchingFinished(result);  // 你自己实现的界面更新方法
+    } else if (msg=="MATCH_FAILED") {
+        matchPage->matchingFinished("未找到合适的匹配对象");
     } else if (msg=="PASS") {
     } else {
         QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
@@ -235,5 +374,35 @@ void Client::handleTextMessage(const QByteArray& data) {
 }
 
 void Client::onDisconnected() {
-    QMessageBox::information(nullptr, "提示", "与服务器断开连接");
+    QMessageBox *msgBox = new QMessageBox(nullptr);
+    msgBox->setWindowTitle("提示");
+    msgBox->setText("与服务器断开连接");
+    msgBox->setIcon(QMessageBox::Information);
+    msgBox->setStandardButtons(QMessageBox::Ok);
+
+    msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+    msgBox->exec();
 }

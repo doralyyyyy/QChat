@@ -50,6 +50,7 @@ public:
     QString newNickname;
     QString email;
     QPixmap avatar;
+    QString interest;
     QTcpSocket *socket;  // 与服务端的连接
 
     void registerSuccess();
@@ -61,9 +62,11 @@ public:
     void handleTextMessage(const QByteArray& data);
     void tryFinishFile(QTcpSocket* s);
     bool ifconnected();
+    void showStyledMessageBox(const QString& title, const QString& text, QMessageBox::Icon icon);
     QString getNickname();
     QString getEmail();
     QString requestAvatar(const QString &nickname);
+
 
 private slots:
     void onConnected();   // 客户端连接成功时的槽

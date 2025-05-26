@@ -15,13 +15,14 @@ public:
     void getFriendList();
     void updateFriendList(const QStringList &list);
     void updateAvatar(const QString &nickname, const QString &path);
+    void addFriend(const QString &nickname);
 
-    QStringList friendListData;   // 好友列表
+    QStringList friendListData;   // 好友昵称列表
+    QListWidget *friendList;     // 好友列表
 
 private:
     void setupUI();
     void sleep(int ms);
-    void addFriend(const QString &nickname);
     bool removeFriend(const QString &nickname);
     void updateListDisplay();
 
@@ -31,7 +32,6 @@ private slots:
 
 private:
     Client *client;
-    QListWidget *friendList;
     QPushButton *addButton;
     QMap<QString, QString> avatarMap; // 昵称 -> 本地头像路径
 };

@@ -4,22 +4,59 @@
 
 MainWindow::MainWindow(Client *client, QWidget *parent)
     : QMainWindow(parent), client(client) {
-    this->setWindowTitle("QChat");
+    this->setWindowTitle("QChatClient");
     this->resize(800,600);
     client->mainWindow=this;
 
-    // 创建左侧按钮
-    chatButton=new QPushButton("聊天窗口");
-    friendListButton=new QPushButton("好友列表");
-    matchButton=new QPushButton("好友匹配");
-    settingButton=new QPushButton("设置");
+    //创建左侧按钮
+    chatButton = new QPushButton;
+    friendListButton = new QPushButton;
+    matchButton = new QPushButton;
+    settingButton = new QPushButton;
 
-    chatButton->setMinimumHeight(40);
-    friendListButton->setMinimumHeight(40);
-    matchButton->setMinimumHeight(40);
-    settingButton->setMinimumHeight(40);
+    // 设置固定大小
+    chatButton->setFixedSize(80, 80);
+    friendListButton->setFixedSize(80, 80);
+    matchButton->setFixedSize(80, 80);
+    settingButton->setFixedSize(80, 80);
 
-    QVBoxLayout *leftLayout=new QVBoxLayout;
+    // 设置图标
+    chatButton->setIcon(QIcon(":/icons/chat_icon.jpg"));
+    friendListButton->setIcon(QIcon(":/icons/friend_list_icon.jpg"));
+    matchButton->setIcon(QIcon(":/icons/match_icon.jpg"));
+    settingButton->setIcon(QIcon(":/icons/setting_icon.jpg"));
+
+    chatButton->setToolTip("聊天窗口");
+    friendListButton->setToolTip("好友列表");
+    matchButton->setToolTip("好友匹配");
+    settingButton->setToolTip("设置");
+
+    QSize iconSize(48, 48);
+    chatButton->setIconSize(iconSize);
+    friendListButton->setIconSize(iconSize);
+    matchButton->setIconSize(iconSize);
+    settingButton->setIconSize(iconSize);
+
+    // 设置样式
+    QString buttonStyle = R"(
+    QPushButton {
+        background-color: transparent;
+        border: none;
+    }
+    QPushButton:hover {
+        background-color: rgba(255, 0, 0, 30%);
+        border-radius: 10px;
+    }
+    )";
+    chatButton->setStyleSheet(buttonStyle);
+    friendListButton->setStyleSheet(buttonStyle);
+    matchButton->setStyleSheet(buttonStyle);
+    settingButton->setStyleSheet(buttonStyle);
+
+    // 左侧布局
+    QVBoxLayout *leftLayout = new QVBoxLayout;
+    leftLayout->setSpacing(20);           // 按钮之间的间距
+    leftLayout->setContentsMargins(15, 20, 15, 20); // 上下左右边距
     leftLayout->addWidget(chatButton);
     leftLayout->addWidget(friendListButton);
     leftLayout->addWidget(matchButton);
@@ -30,13 +67,16 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
     leftWidget->setLayout(leftLayout);
 
     // 创建右侧页面区
+    chatPartner="Server";     // 默认和Server聊天
     stackedWidget=new QStackedWidget;
     chatPage=new ChatPage(client);
+    chatPage2=new ChatPage2(client);
     friendListPage=new FriendListPage(client);
     matchPage=new MatchPage(client);
     settingPage=new SettingPage(client);
 
     stackedWidget->addWidget(chatPage);
+    stackedWidget->addWidget(chatPage2);
     stackedWidget->addWidget(friendListPage);
     stackedWidget->addWidget(matchPage);
     stackedWidget->addWidget(settingPage);
@@ -62,6 +102,10 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
     connect(friendListButton,&QPushButton::clicked,this,&MainWindow::showFriendListPage);
     connect(matchButton,&QPushButton::clicked,this,&MainWindow::showMatchPage);
     connect(settingButton,&QPushButton::clicked,this,&MainWindow::showSettingPage);
+    connect(friendListPage->friendList, &QListWidget::itemDoubleClicked, this, [=](QListWidgetItem *item){
+        chatPartner=item->text().simplified().split(' ').value(0);
+        chatButton->click();
+    });
 }
 
 void MainWindow::sleep(int ms) {
@@ -71,11 +115,24 @@ void MainWindow::sleep(int ms) {
 }
 
 void MainWindow::showChatPage() {
-    chatPage->refresh();
-    stackedWidget->setCurrentWidget(chatPage);
+    if (matchPage->isVisible()) {
+        matchPage->stopMatching();
+    }
+
+    if(chatPartner=="Server"){
+        chatPage->refresh();
+        stackedWidget->setCurrentWidget(chatPage);
+    }else{
+        stackedWidget->setCurrentWidget(chatPage2);
+        chatPage2->chatTitleLabel->setText(chatPartner);
+    }
 }
 
 void MainWindow::showFriendListPage() {
+    if (matchPage->isVisible()) {
+        matchPage->stopMatching();
+    }
+
     stackedWidget->setCurrentWidget(friendListPage);
 }
 
@@ -84,7 +141,11 @@ void MainWindow::showMatchPage() {
 }
 
 void MainWindow::showSettingPage() {
-    QString msg="GET_SELF_AVATAR|"+client->nickname+'\n';  // 获取自己头像
+    if (matchPage->isVisible()) {
+        matchPage->stopMatching();
+    }
+
+    QString msg="GET_SELF_AVATAR_AND_INTERESTS|"+client->nickname+'\n';  // 获取自己头像和兴趣
     client->sendNonTextMessage(msg);
     stackedWidget->setCurrentWidget(settingPage);
 }

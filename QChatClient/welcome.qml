@@ -31,7 +31,7 @@ Window {
             materials: [
                 DefaultMaterial {
                     diffuseMap: Texture {
-                        source: "qrc:icon.png"
+                        source: "qrc:/images/icon.png"
                     }
                 }
             ]

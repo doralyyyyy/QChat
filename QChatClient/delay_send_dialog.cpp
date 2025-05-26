@@ -104,7 +104,37 @@ void DelaySendDialog::startDelaySend()
 {
     QString msg=textInput->text().trimmed();
     if(msg.isEmpty()){
-        QMessageBox::warning(this,"错误","消息不能为空");
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("错误");
+        msgBox->setText("消息不能为空");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
         return;
     }
 
@@ -120,7 +150,37 @@ void DelaySendDialog::startDelaySend()
         QDateTime target=timeEdit->dateTime();
         delayMs=now.msecsTo(target);
         if(delayMs<=0){
-            QMessageBox::warning(this,"错误","请选择未来的时间");
+            QMessageBox *msgBox = new QMessageBox(this);
+            msgBox->setWindowTitle("错误");
+            msgBox->setText("请选择未来的时间");
+            msgBox->setIcon(QMessageBox::Warning);
+            msgBox->setStandardButtons(QMessageBox::Ok);
+
+            msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+            msgBox->exec();
             return;
         }
     }
