@@ -1,17 +1,19 @@
 #include "server.h"
-#include "main_window.h"
+#include "chat_page.h"
+#include "friend_list_page.h"
+#include "qtimer.h"
 #include <QBuffer>
 
-Server::Server(quint16 port,MainWindow *mainWindow, QObject *parent)
-    : QObject(parent), socket(nullptr),mainWindow(mainWindow) {
+Server::Server(quint16 port, QObject *parent)
+    : QObject(parent), socket(nullptr) {
     server = new QTcpServer(this);
     dbManager = new DatabaseManager;
     userDB = new UserAuthDatabaseManager;
     if (!server->listen(QHostAddress::Any, port)) {
-        mainWindow->updateMessage("服务器无法启动");
+        qDebug()<<"服务器无法启动";
     }
     else {
-        mainWindow->updateMessage("服务器已启动并监听端口："+QString::number(port));
+        qDebug()<<"服务器已启动并监听端口："+QString::number(port);
     };
     connect(server, &QTcpServer::newConnection, this, &Server::onNewConnection);
 }
@@ -29,22 +31,84 @@ void Server::sleep(int ms) {
     loop.exec();
 }
 
+
 void Server::onNewConnection() {
     socket = server->nextPendingConnection();
     connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &Server::onDisconnected);
-    QMessageBox::information(nullptr, "", "客户端已连接");
+    QMessageBox *msgBox = new QMessageBox(nullptr);
+    msgBox->setWindowTitle("");
+    msgBox->setText("客户端已连接");
+    msgBox->setIcon(QMessageBox::Information);
+    msgBox->setStandardButtons(QMessageBox::Ok);
+
+    msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+    msgBox->exec();
 }
+
 
 void Server::sendMessage(const QString &message) {
     if (socket&&socket->state() == QTcpSocket::ConnectedState) {
         QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
         socket->write(message.toUtf8());
         socket->flush();        //确保消息被立即发送
-        mainWindow->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
+        chatPage->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
         dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
     } else {
-        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
+        QMessageBox *msgBox = new QMessageBox(nullptr);
+        msgBox->setWindowTitle("提示");
+        msgBox->setText("发送失败，请检查您的网络连接");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
     }
 }
 
@@ -69,14 +133,44 @@ void Server::sendFile(const QString& filePath) {
 
                 QString content="FILE|"+filename;
                 QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-                mainWindow->updateMessage("[" + time + "] 我：" + content);
+                chatPage->updateMessage("[" + time + "] 我：" + content);
                 dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
             } else {
-                mainWindow->updateMessage("文件保存失败：" + filename);
+                chatPage->updateMessage("文件保存失败：" + filename);
             }
         }
     } else {
-        QMessageBox::warning(nullptr, "提示", "发送失败，请检查您的网络连接！");
+        QMessageBox *msgBox = new QMessageBox(nullptr);
+        msgBox->setWindowTitle("提示");
+        msgBox->setText("发送失败，请检查您的网络连接");
+        msgBox->setIcon(QMessageBox::Warning);
+        msgBox->setStandardButtons(QMessageBox::Ok);
+
+        msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+        msgBox->exec();
     }
 }
 
@@ -129,18 +223,19 @@ void Server::tryFinishFile(QTcpSocket* s) {
             file.write(f.data.left(f.expectedSize));
             file.close();
             qDebug()<<"写入成功："<<fullPath;
-            if(subdir=="avatars/") {
+            if(subdir=="avatars/") {    // 发来更换头像请求
                 QString nickname=f.name.left(f.name.indexOf("_avatar"));
                 userDB->updateAvatarPath(nickname,fullPath);
+                friendListPage->updateListDisplay();
             } else {
                 QString content="FILE|"+f.name;
                 QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-                mainWindow->updateMessage("[" + time + "] 对方：" + content);
+                chatPage->updateMessage("[" + time + "] 对方：" + content);
                 dbManager->insertMessage("对方","我",content,time);
                 qDebug()<<"收到普通文件："<<f.name;
             }
         } else {
-            mainWindow->updateMessage("文件保存失败："+f.name);
+            chatPage->updateMessage("文件保存失败："+f.name);
             qDebug()<<"文件写入失败："<<fullPath;
         }
         fileMap.remove(s);
@@ -163,6 +258,8 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         }
         QString code = generateCode();
         QString nickname = userDB->getNicknameByEmail(email);
+        nowClient=nickname;
+        friendListPage->updateListDisplay();
         sendVerificationCodeBack(code,nickname);
         sendVerificationCode(email, code);
     } else if (msg.startsWith("REGISTER:")) {          // 收到注册消息
@@ -181,6 +278,8 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         if (userDB->addUser(nick, pwd, email)) {
             socket->write("REGISTER_OK");
             socket->flush();
+            nowClient=nick;
+            friendListPage->updateListDisplay();
         } else {
             socket->write("REGISTER_FAIL");
             socket->flush();
@@ -205,6 +304,8 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
                 QString reply = "LOGIN_SUCCESS|" + nickname + "|" + email;
                 socket->write(reply.toUtf8());
                 socket->flush();
+                nowClient=nickname;
+                friendListPage->updateListDisplay();
             } else {
                 socket->write("LOGIN_FAIL");
                 socket->flush();
@@ -273,11 +374,12 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         } else {
             qDebug() << "Failed to load avatar from path:" << path;
         }
-    } else if (msg.startsWith("GET_SELF_AVATAR|")) {
-        QString name=msg.mid(QString("GET_SELF_AVATAR|").length()).trimmed();
+    } else if (msg.startsWith("GET_SELF_AVATAR_AND_INTERESTS|")) {
+        QString name=msg.mid(QString("GET_SELF_AVATAR_AND_INTERESTS|").length()).trimmed();
         QString path=userDB->getAvatar(name).trimmed();
         QByteArray data;
         QFile file(path);
+        QString interest=userDB->getInterest(name).trimmed();
         if (file.exists()) {
             qDebug() << "Avatar file exists:" << path;
             if (file.open(QIODevice::ReadOnly)) {
@@ -290,7 +392,7 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
             qDebug() << "Avatar file does not exist:" << path;
         }
         if (!data.isEmpty()) {
-            QString header = "FILE:" + name + "_self_avatar.png:" + QString::number(data.size()) + '\n';
+            QString header = "FILE:"+interest+"|"+name+"_self_avatar.png:"+QString::number(data.size()) + '\n';
             socket->write(header.toUtf8() + data + '\n');
             socket->flush();
         } else {
@@ -303,13 +405,39 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         if (userDB->changeNickname(oldName, newName)) {
             socket->write("CHANGE_NICKNAME_OK");
             socket->flush();
+            nowClient=newName;
+            friendListPage->updateListDisplay();
         } else {
             socket->write("CHANGE_NICKNAME_FAIL");
             socket->flush();
         }
-    } else {
+    } else if (msg.startsWith("CHANGE_INTEREST|")) {
+        QString newInterest = msg.section('|', 1);
+        QString nickname = nowClient;
+
+        if (!nickname.isEmpty()) {
+            if (userDB->changeInterest(nickname, newInterest)) {
+                qDebug() << nickname << "兴趣更新为：" << newInterest;
+            } else {
+                qDebug() << "更新兴趣失败：" << nickname;
+            }
+        }
+        return;
+    } else if (msg.startsWith("MATCH_REQUEST|")) {
+        QString nickname=msg.section('|',1);
+        qDebug()<<"Match:"+nickname;
+        QString matchedUser,matchedInteret;
+        if(userDB->findMatchingUser(nickname,matchedUser,matchedInteret)) {
+            QString msg="MATCH_RESULT|"+matchedUser+"|"+matchedInteret+"\n";
+            socket->write(msg.toUtf8());
+            socket->flush();
+        } else {
+            socket->write("MATCH_FAILED");
+            socket->flush();
+        }
+    } else{
         QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-        mainWindow->updateMessage("[" + time + "] 对方：" + msg);
+        chatPage->updateMessage("[" + time + "] 对方：" + msg);
         dbManager->insertMessage("对方", "我", msg, time);
     }
 }
@@ -367,6 +495,39 @@ void Server::sendVerificationCodeBack(const QString &code,const QString &nicknam
 }
 
 void Server::onDisconnected() {
-    QMessageBox::information(nullptr, "", "客户端断开连接");
+    nowClient="Server";
+    friendListPage->updateListDisplay();
+
+    QMessageBox *msgBox = new QMessageBox(nullptr);
+    msgBox->setWindowTitle("");
+    msgBox->setText("客户端断开连接");
+    msgBox->setIcon(QMessageBox::Information);
+    msgBox->setStandardButtons(QMessageBox::Ok);
+
+    msgBox->setStyleSheet(R"(
+            QMessageBox {
+                background-color: #fff3f3;
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            QLabel {
+                font-size: 14px;
+                color: #ff4444;
+            }
+            QPushButton {
+                background-color: #ff9a9e;
+                border: none;
+                border-radius: 10px;
+                padding: 8px;
+                font-weight: bold;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #fbc2eb;
+            }
+        )");
+
+    msgBox->exec();
     socket->deleteLater();
 }

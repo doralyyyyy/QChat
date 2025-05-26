@@ -17,11 +17,13 @@
 #include "user_auth_database_manager.h"
 
 class MainWindow;
+class ChatPage;
+class FriendListPage;
 
 class Server : public QObject {
     Q_OBJECT
 public:
-    explicit Server(quint16 port,MainWindow *mainWindow, QObject *parent = nullptr);
+    explicit Server(quint16 port, QObject *parent = nullptr);
     ~Server();
 
     struct FileInfo {
@@ -32,7 +34,12 @@ public:
         bool headerReceived=false;
     };
     QMap<QTcpSocket*, FileInfo> fileMap;
-    QString user="server";
+    MainWindow *mainWindow;
+    ChatPage *chatPage;
+    FriendListPage *friendListPage;
+    QString nowClient;
+    QTcpSocket *socket;       // 与客户端的连接
+    UserAuthDatabaseManager *userDB;   // 用户数据库
 
     void sendVerificationCode(const QString &email, const QString &code);
     void sendVerificationCodeBack(const QString &code,const QString &nickname="");
@@ -50,10 +57,7 @@ private slots:
 
 private:
     QTcpServer *server;       // 监听端口的服务器
-    QTcpSocket *socket;       // 与客户端的连接
-    MainWindow *mainWindow;
     DatabaseManager *dbManager;      // 聊天记录数据库
-    UserAuthDatabaseManager *userDB;   // 用户数据库
 
 };
 

@@ -17,7 +17,8 @@ void UserAuthDatabaseManager::init() {
            "nickname TEXT UNIQUE,"
            "password TEXT,"
            "email TEXT UNIQUE,"
-           "avatar TEXT)");
+           "avatar TEXT,"
+           "interests TEXT)");
 
     q.exec("CREATE TABLE IF NOT EXISTS friends ("
            "user_id INTEGER,"
@@ -26,22 +27,24 @@ void UserAuthDatabaseManager::init() {
 
     q.exec("SELECT COUNT(*) FROM users WHERE nickname='Server'");
     if (q.next() && q.value(0).toInt()==0) {
-        q.prepare("INSERT INTO users (nickname,password,email,avatar) VALUES (?,?,?,?)");
+        q.prepare("INSERT INTO users (nickname,password,email,avatar,interests) VALUES (?,?,?,?,?)");
         q.addBindValue("Server");
         q.addBindValue("server");
         q.addBindValue("server@qchat.com");
-        q.addBindValue(":/images/default.png");
+        q.addBindValue(":/images/Server.png");
+        q.addBindValue("系统账号");
         q.exec();
     }
 }
 
 bool UserAuthDatabaseManager::addUser(const QString &nickname,const QString &password,const QString &email) {
     QSqlQuery q(db);
-    q.prepare("INSERT INTO users (nickname,password,email,avatar) VALUES (?,?,?,?)");
+    q.prepare("INSERT INTO users (nickname,password,email,avatar,interests) VALUES (?,?,?,?,?)");
     q.addBindValue(nickname);
     q.addBindValue(password);
     q.addBindValue(email);
     q.addBindValue(":/images/default.png");
+    q.addBindValue("");
     if (!q.exec()) {
         qWarning() << "Add user failed:" << q.lastError().text();
         return false;
@@ -216,4 +219,55 @@ bool UserAuthDatabaseManager::updateAvatarPath(const QString& nickname, const QS
         return false;
     }
     return q.numRowsAffected() > 0;
+}
+
+bool UserAuthDatabaseManager::changeInterest(const QString &nickname, const QString &interest) {
+    QSqlQuery q(db);
+    q.prepare("UPDATE users SET interests=? WHERE nickname=?");
+    q.addBindValue(interest);
+    q.addBindValue(nickname);
+    if (!q.exec()) {
+        qDebug() << "更新兴趣失败:" << q.lastError().text();
+        return false;
+    }
+    return q.numRowsAffected() > 0;
+}
+
+QString UserAuthDatabaseManager::getInterest(const QString &nickname) {
+    QSqlQuery q(db);
+    q.prepare("SELECT interests FROM users WHERE nickname=?");
+    q.addBindValue(nickname);
+    if (q.exec() && q.next()) {
+        return q.value(0).toString();
+    }
+    return QString();
+}
+
+bool UserAuthDatabaseManager::findMatchingUser(const QString &nickname, QString &matchedUser, QString &matchedInterest) {
+    QString myInterest=getInterest(nickname);
+    if(myInterest.isEmpty()) return false;
+
+    QStringList myList=myInterest.split(u'，',Qt::SkipEmptyParts);
+    if(myList.isEmpty()) return false;
+
+    QSqlQuery q(db);
+    q.prepare("SELECT nickname, interests FROM users WHERE nickname != ? AND interests != ''");
+    q.addBindValue(nickname);
+    if(!q.exec()) return false;
+
+    while(q.next()) {
+        QString other=q.value(0).toString();
+        QString interestStr=q.value(1).toString();
+        if(areFriends(nickname,other)) continue;
+
+        QStringList otherList=interestStr.split(u'，',Qt::SkipEmptyParts);
+        for(const QString &i:std::as_const(myList)) {
+            if(otherList.contains(i)) {
+                matchedUser=other;
+                matchedInterest=interestStr;
+                return true;
+            }
+        }
+    }
+    return false;
 }

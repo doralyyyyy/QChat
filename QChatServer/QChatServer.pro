@@ -17,12 +17,16 @@ RESOURCES += \
     resources.qrc
 
 SOURCES += \
+    avatar_cropper.cpp \
     camera.cpp \
+    chat_page.cpp \
+    chat_page2.cpp \
     close_confirm_dialog.cpp \
     database_manager.cpp \
     delay_send_dialog.cpp \
     feature_menu_widget.cpp \
     file_confirm_dialog.cpp \
+    friend_list_page.cpp \
     main.cpp \
     main_window.cpp \
     message.cpp \
@@ -35,12 +39,16 @@ SOURCES += \
     user_auth_database_manager.cpp
 
 HEADERS += \
+    avatar_cropper.h \
     camera.h \
+    chat_page.h \
+    chat_page2.h \
     close_confirm_dialog.h \
     database_manager.h \
     delay_send_dialog.h \
     feature_menu_widget.h \
     file_confirm_dialog.h \
+    friend_list_page.h \
     main_window.h \
     message.h \
     message_bubble_widget.h \

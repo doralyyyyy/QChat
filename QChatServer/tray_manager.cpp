@@ -5,7 +5,7 @@
 TrayManager::TrayManager(QWidget *mainWindow, QObject *parent)
     : QObject(parent), mainWindow(mainWindow) {
     trayIcon = new QSystemTrayIcon(mainWindow);
-    trayIcon->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../../../icon.png"));
+    trayIcon->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../../../images/icon.png"));
     trayIcon->setToolTip("QChat 正在后台运行");
 
     trayMenu = new QMenu();

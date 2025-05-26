@@ -29,6 +29,9 @@ public:
     bool removeFriend(const QString &user1,const QString &user2);
     bool changeNickname(const QString& oldName, const QString& newName);
     bool updateAvatarPath(const QString& nickname, const QString& path);
+    bool changeInterest(const QString &nickname, const QString &interest);
+    QString getInterest(const QString &nickname);
+    bool findMatchingUser(const QString &nickname, QString &matchedUser, QString &matchedInterest);
 
     QSqlDatabase db;
 
