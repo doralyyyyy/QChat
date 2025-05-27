@@ -26,24 +26,38 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent) : QWidget(parent) {
 
     QMenu *menu=new QMenu(menuBtn);
 
-    QAction *wordCloudAction=menu->addAction("       高频词统计");
-    QAction *relationAction=menu->addAction("     用户关系分析");
-    QAction *exportPdfAction=menu->addAction("导出聊天记录为 PDF");
-    QAction *timelineAction=menu->addAction("   聊天记录时间轴");
+    QPixmap wordPixmap(":/icons/wordcloud.png");
+    QPixmap relationPixmap(":/icons/relation.png");
+    QPixmap pdfPixmap(":/icons/pdf.png");
+    QPixmap timelinePixmap(":/icons/timeline.png");
+    QPixmap feedbackPicmap(":/icons/feedback.png");
+
+    QAction *wordCloudAction = menu->addAction(QIcon(wordPixmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)), "高频词统计");
+    QAction *relationAction = menu->addAction(QIcon(relationPixmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)), "用户关系分析");
+    QAction *exportPdfAction = menu->addAction(QIcon(pdfPixmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)), "导出为 PDF");
+    QAction *timelineAction = menu->addAction(QIcon(timelinePixmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)), "聊天时间轴");
+    QAction *feedbackAction = menu->addAction(QIcon(feedbackPicmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)), "反馈与建议");
+
 
     menu->setStyleSheet(R"(
         QMenu {
-            font-size: 11px;
+            font-size: 14px;
             background-color: #ffffff;
             border-radius: 10px;
-            padding: 5px;
+            padding: 2px;
+        }
+
+        QMenu::icon {
+            width: 60px;
+            height: 60px;
         }
 
         QMenu::item {
-            padding: 5px;
-            min-height: 30px;
-            font-size: 11px;
-            border-radius: 5px;
+            padding: 5px 7px;
+            min-height: 20px;
+            min-width: 90px;
+            font-size: 14px;
+            border-radius: 10px;
             color: #333333;
         }
 
@@ -68,6 +82,7 @@ FeatureMenuWidget::FeatureMenuWidget(QWidget *parent) : QWidget(parent) {
     connect(relationAction,&QAction::triggered,this,&FeatureMenuWidget::relationAnalysisRequested);
     connect(exportPdfAction,&QAction::triggered,this,&FeatureMenuWidget::exportChatToPdfRequested);
     connect(timelineAction,&QAction::triggered,this,&FeatureMenuWidget::generateTimelineRequested);
+    connect(feedbackAction,&QAction::triggered,this,&FeatureMenuWidget::feedbackRequested);
 }
 
 QToolBar* FeatureMenuWidget::getToolBar() {

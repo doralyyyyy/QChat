@@ -120,6 +120,7 @@ void DelaySendDialog::startDelaySend()
             QLabel {
                 font-size: 14px;
                 color: #ff4444;
+                background: transparent;
             }
             QPushButton {
                 background-color: #ff9a9e;
@@ -166,6 +167,7 @@ void DelaySendDialog::startDelaySend()
             QLabel {
                 font-size: 14px;
                 color: #ff4444;
+                background: transparent;
             }
             QPushButton {
                 background-color: #ff9a9e;

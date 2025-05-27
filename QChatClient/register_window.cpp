@@ -64,51 +64,43 @@ RegisterWindow::RegisterWindow(Client *client, QWidget *parent) : QWidget(parent
     // 设置样式
     setStyleSheet(R"(
     QWidget {
-        border: 3px solid #dcdcdc;
+        background-color: #f8f8f8;
         border-radius: 20px;
-    }
-
-    #loginPanel {
-        background-color: rgba(255, 255, 255, 240);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin: 0;
     }
 
     QLineEdit {
         padding: 10px;
-        border: 2px solid #ccc;
+        border: 2px solid #ddd;
         border-radius: 12px;
         background: #ffffff;
         font-size: 14px;
+    }
+
+    QLineEdit:focus {
+        border-color: #ff9a9e;
     }
 
     QPushButton {
         padding: 10px;
         border: none;
         border-radius: 12px;
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                    stop:0 #ff9a9e, stop:1 #fad0c4);
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
         color: white;
         font-size: 16px;
         font-weight: bold;
     }
 
     QPushButton:hover {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                    stop:0 #fbc2eb, stop:1 #a6c1ee);
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
     }
 
-    QCheckBox {
-        color: #555;
-        font-size: 14px;
-    }
-
-    QPushButton#registerButton {
+    QPushButton#backButton {
         color: #007bff;
         background: transparent;
-        text-decoration: underline;
         font-size: 14px;
+        text-decoration: underline;
     }
 
     QLabel {
@@ -121,7 +113,7 @@ RegisterWindow::RegisterWindow(Client *client, QWidget *parent) : QWidget(parent
     QHBoxLayout {
         margin: 5px 0;
     }
-     )");
+    )");
 }
 
 void RegisterWindow::checkPasswordsMatch() {
@@ -151,7 +143,6 @@ void RegisterWindow::onSendCodeClicked() {
         msgBox->setText("请输入邮箱");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -160,6 +151,7 @@ void RegisterWindow::onSendCodeClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -175,7 +167,6 @@ void RegisterWindow::onSendCodeClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
@@ -185,7 +176,6 @@ void RegisterWindow::onSendCodeClicked() {
         msgBox->setText("请输入有效的邮箱地址");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -194,6 +184,7 @@ void RegisterWindow::onSendCodeClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -209,7 +200,6 @@ void RegisterWindow::onSendCodeClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
@@ -231,7 +221,6 @@ void RegisterWindow::onVerifyClicked() {
         msgBox->setText("请填写完整信息");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -240,6 +229,7 @@ void RegisterWindow::onVerifyClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -255,7 +245,6 @@ void RegisterWindow::onVerifyClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
@@ -265,7 +254,6 @@ void RegisterWindow::onVerifyClicked() {
         msgBox->setText("两次密码不一致");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -274,6 +262,7 @@ void RegisterWindow::onVerifyClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -289,7 +278,6 @@ void RegisterWindow::onVerifyClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
@@ -299,7 +287,6 @@ void RegisterWindow::onVerifyClicked() {
         msgBox->setText("请输入验证码");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -308,6 +295,7 @@ void RegisterWindow::onVerifyClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -323,7 +311,6 @@ void RegisterWindow::onVerifyClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
@@ -333,7 +320,6 @@ void RegisterWindow::onVerifyClicked() {
         msgBox->setText("验证码错误");
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
-
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -342,6 +328,7 @@ void RegisterWindow::onVerifyClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -357,13 +344,12 @@ void RegisterWindow::onVerifyClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }
 
     QString msg = "REGISTER:" + nick + "|" + pwd + "|" + email + "|" + code;
     client->sendNonTextMessage(msg.toUtf8());
-    client->nickname=nick;
-    client->email=email;
+    client->nickname = nick;
+    client->email = email;
 }

@@ -57,38 +57,27 @@ LoginWindow::LoginWindow(Client* client, QWidget *parent) : QWidget(parent), cli
 
     setStyleSheet(R"(
         QWidget {
-            border: 3px solid #dcdcdc;
+            background-color: #f8f8f8;
             border-radius: 20px;
         }
 
         #loginPanel {
-            background-color: rgba(255, 255, 255, 240);
+            background-color: #f8f8f8;
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+            box-shadow: none;
         }
-        #topBar {
-            background-color: #ffccff;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #555;
-            text-align: center;
-        }
-        #closeButton {
-            background-color: transparent;
-            border: none;
-            color: #ff4444;
-            font-size: 18px;
-        }
+
         QLineEdit {
             padding: 10px;
             border: 2px solid #ccc;
             border-radius: 12px;
             background: #ffffff;
             font-size: 14px;
+        }
+
+        QLineEdit:focus {
+            border-color: #ff9a9e;
         }
 
         QPushButton {
@@ -157,6 +146,7 @@ void LoginWindow::onLoginClicked() {
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
 
+        // 修改样式，去掉灰色边框和阴影，使其背景融入
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -165,6 +155,7 @@ void LoginWindow::onLoginClicked() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -180,7 +171,6 @@ void LoginWindow::onLoginClicked() {
                 background-color: #fbc2eb;
             }
         )");
-
         msgBox->exec();
         return;
     }

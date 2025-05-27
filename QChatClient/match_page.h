@@ -4,8 +4,10 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QMovie>
+#include <QTimer>
 
-class Client; // 前向声明，避免循环依赖
+class Client;
 
 class MatchPage : public QWidget {
     Q_OBJECT
@@ -17,6 +19,7 @@ public:
     void stopMatching();
     void matchingFinished(const QString& result);
     void addFriend();
+    void resizeEvent(QResizeEvent *event);
 
 private slots:
     void startMatching();
@@ -32,6 +35,9 @@ private:
     QPushButton *cancelButton;
     QPushButton *addFriendButton;
     QString lastMatchedUser;
+    QTimer *matchTimer;
+    QLabel *gifLabel;   // GIF背景
+    QMovie *movie;      // GIF播放器
 };
 
 #endif // MATCH_PAGE_H

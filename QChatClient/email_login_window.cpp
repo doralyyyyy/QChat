@@ -40,7 +40,6 @@ EmailLoginWindow::EmailLoginWindow(Client *client, QWidget *parent) : QWidget(pa
     // 设置界面样式
     setStyleSheet(R"(
         QWidget {
-            border: 3px solid #dcdcdc;
             border-radius: 20px;
         }
 
@@ -107,24 +106,26 @@ void EmailLoginWindow::onSendCodeClicked() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 
@@ -140,24 +141,26 @@ void EmailLoginWindow::onSendCodeClicked() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 
@@ -181,24 +184,26 @@ void EmailLoginWindow::onVerifyClicked() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 
@@ -214,24 +219,26 @@ void EmailLoginWindow::onVerifyClicked() {
 
         msgBox->setStyleSheet(R"(
             QMessageBox {
-                background-color: #ffe6e6;
+                background-color: #fff3f3;
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
             QPushButton {
-                background-color: #ff7f7f;
+                background-color: #ff9a9e;
                 border: none;
                 border-radius: 10px;
-                color: white;
-                font-size: 14px;
                 padding: 8px;
+                font-weight: bold;
+                color: white;
             }
             QPushButton:hover {
-                background-color: #ff4c4c;
+                background-color: #fbc2eb;
             }
         )");
 

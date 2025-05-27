@@ -24,7 +24,9 @@ SOURCES += \
     database_manager.cpp \
     delay_send_dialog.cpp \
     email_login_window.cpp \
+    emoji_picker.cpp \
     feature_menu_widget.cpp \
+    feedback_dialog.cpp \
     file_confirm_dialog.cpp \
     friend_list_page.cpp \
     login_window.cpp \
@@ -50,7 +52,9 @@ HEADERS += \
     database_manager.h \
     delay_send_dialog.h \
     email_login_window.h \
+    emoji_picker.h \
     feature_menu_widget.h \
+    feedback_dialog.h \
     file_confirm_dialog.h \
     friend_list_page.h \
     login_window.h \

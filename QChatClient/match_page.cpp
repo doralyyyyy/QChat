@@ -1,10 +1,12 @@
 #include "match_page.h"
 #include "client.h"
 #include "friend_list_page.h"
-#include "qtimer.h"
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QMovie>
+#include <QTimer>
+#include <QEventLoop>
 
 MatchPage::MatchPage(Client *client, QWidget *parent)
     : QWidget(parent), client(client) {
@@ -15,9 +17,20 @@ MatchPage::MatchPage(Client *client, QWidget *parent)
     mainLayout->setAlignment(Qt::AlignCenter);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
+    // 背景GIF
+    gifLabel = new QLabel(this);
+    gifLabel->setScaledContents(true);
+    gifLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    movie = new QMovie(":/gifs/matching.GIF");
+    gifLabel->setMovie(movie);
+    gifLabel->lower();
+    gifLabel->setVisible(true);
+    movie->jumpToFrame(0);
+
     statusLabel = new QLabel("点击开始匹配", this);
     statusLabel->setAlignment(Qt::AlignCenter);
     statusLabel->setStyleSheet("font-size: 20px; color: #333;");
+    statusLabel->raise();
 
     matchButton = new QPushButton("开始匹配", this);
     matchButton->setFixedSize(160, 50);
@@ -30,25 +43,25 @@ MatchPage::MatchPage(Client *client, QWidget *parent)
     cancelButton->setVisible(false);
     connect(cancelButton, &QPushButton::clicked, this, &MatchPage::cancelMatching);
 
-    mainLayout->addWidget(statusLabel);
-    mainLayout->addSpacing(20);
-    mainLayout->addWidget(matchButton);
-    mainLayout->addWidget(cancelButton);
-
-    addFriendButton=new QPushButton("加为好友", this);
+    addFriendButton = new QPushButton("加为好友", this);
     addFriendButton->setFixedSize(160, 40);
     addFriendButton->setStyleSheet(buttonStyle());
     addFriendButton->setVisible(false);
     connect(addFriendButton, &QPushButton::clicked, this, &MatchPage::addFriend);
-    mainLayout->addWidget(addFriendButton);
+
+    mainLayout->addWidget(statusLabel, 0, Qt::AlignHCenter);
+    mainLayout->addSpacing(40);
+    mainLayout->addWidget(matchButton, 0, Qt::AlignHCenter);
+    mainLayout->addWidget(cancelButton, 0, Qt::AlignHCenter);
+    mainLayout->addWidget(addFriendButton, 0, Qt::AlignHCenter);
 
     setLayout(mainLayout);
-}
 
-void MatchPage::sleep(int ms) {
-    QEventLoop loop;
-    QTimer::singleShot(ms, &loop, &QEventLoop::quit);
-    loop.exec();
+    matchTimer=new QTimer(this);
+    matchTimer->setSingleShot(true);
+    connect(matchTimer,&QTimer::timeout,this,[this](){
+        this->client->sendNonTextMessage("MATCH_REQUEST|" + this->client->nickname);
+    });
 }
 
 QString MatchPage::buttonStyle() const {
@@ -71,47 +84,72 @@ QString MatchPage::buttonStyle() const {
 void MatchPage::startMatching() {
     addFriendButton->setVisible(false);
     matchButton->setVisible(false);
-    statusLabel->setText("正在匹配...");
     cancelButton->setVisible(true);
+    statusLabel->setText("正在匹配...");
 
-    sleep(3000);
+    if (movie->state() != QMovie::Running) {
+        movie->start();
+    }
+    gifLabel->resize(size());
 
-    client->sendNonTextMessage("MATCH_REQUEST|"+client->nickname);
+    matchTimer->start(3000);
 }
 
 void MatchPage::cancelMatching() {
     statusLabel->setText("匹配已取消");
-    addFriendButton->setVisible(false);
+    if (movie->state() == QMovie::Running) {
+        movie->stop();
+        movie->jumpToFrame(0);
+    }
+
     cancelButton->setVisible(false);
+    addFriendButton->setVisible(false);
     matchButton->setText("开始匹配");
     matchButton->setVisible(true);
+    matchTimer->stop();
 }
 
 void MatchPage::matchingFinished(const QString &result) {
     statusLabel->setText(result);
+    if (movie->state() == QMovie::Running) {
+        movie->stop();
+        movie->jumpToFrame(0);
+    }
+
     cancelButton->setVisible(false);
     matchButton->setText("重新匹配");
     matchButton->setVisible(true);
 
     if (result.startsWith("匹配成功")) {
-        int start=result.indexOf("对方昵称: ")+6;
-        int end=result.indexOf("\n", start);
-        lastMatchedUser=result.mid(start, end-start).trimmed();
-        qDebug()<<lastMatchedUser;
+        int start = result.indexOf("对方昵称: ") + 6;
+        int end = result.indexOf("\n", start);
+        lastMatchedUser = result.mid(start, end - start).trimmed();
         addFriendButton->setVisible(true);
     }
 }
 
-void MatchPage::stopMatching() {   // 切换界面时强制停止匹配
+void MatchPage::stopMatching() {
     statusLabel->setText("点击开始匹配");
-    addFriendButton->setVisible(false);
+    if (movie->state() == QMovie::Running) {
+        movie->stop();
+        movie->jumpToFrame(0);
+    }
+
     cancelButton->setVisible(false);
+    addFriendButton->setVisible(false);
     matchButton->setText("开始匹配");
     matchButton->setVisible(true);
+    matchTimer->stop();
 }
 
 void MatchPage::addFriend() {
     if (!lastMatchedUser.isEmpty()) {
         client->friendListPage->addFriend(lastMatchedUser);
     }
+}
+
+//保证动画覆盖整个背景
+void MatchPage::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+    gifLabel->resize(size());
 }

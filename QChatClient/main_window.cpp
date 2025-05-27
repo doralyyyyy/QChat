@@ -21,10 +21,10 @@ MainWindow::MainWindow(Client *client, QWidget *parent)
     settingButton->setFixedSize(80, 80);
 
     // 设置图标
-    chatButton->setIcon(QIcon(":/icons/chat_icon.jpg"));
-    friendListButton->setIcon(QIcon(":/icons/friend_list_icon.jpg"));
-    matchButton->setIcon(QIcon(":/icons/match_icon.jpg"));
-    settingButton->setIcon(QIcon(":/icons/setting_icon.jpg"));
+    chatButton->setIcon(QIcon(":/icons/chat_icon.png"));
+    friendListButton->setIcon(QIcon(":/icons/friend_list_icon.png"));
+    matchButton->setIcon(QIcon(":/icons/match_icon.png"));
+    settingButton->setIcon(QIcon(":/icons/setting_icon.png"));
 
     chatButton->setToolTip("聊天窗口");
     friendListButton->setToolTip("好友列表");

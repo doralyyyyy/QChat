@@ -31,6 +31,32 @@ void MessageContextMenuHandler::showContextMenu(const QPoint &pos) {
     QAction *actSearch = menu.addAction("搜索");
     QAction *actRemind = menu.addAction("提醒");
 
+    menu.setStyleSheet(R"(
+        QMenu {
+            font-size: 14px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        QMenu::item {
+            padding: 4px 12px;
+            min-height: 22px;
+            font-size: 14px;
+            border-radius: 5px;
+            color: #333333;
+        }
+
+        QMenu::item:selected {
+            background-color: #ff9a9e;
+            color: white;
+        }
+
+        QMenu::item:hover {
+            background-color: #fbc2eb;
+        }
+    )");
+
     QAction *chosen = menu.exec(listWidget->viewport()->mapToGlobal(pos));
     if (chosen == actTranslate) translateMessage();
     else if (chosen == actSearch) searchMessage();
@@ -99,23 +125,93 @@ void MessageContextMenuHandler::speakMessage() {
 void MessageContextMenuHandler::remindMessage() {
     QDialog dialog;
     dialog.setWindowTitle("设置提醒时间");
-    QVBoxLayout *layout=new QVBoxLayout(&dialog);
-    QDateTimeEdit *edit=new QDateTimeEdit(QDateTime::currentDateTime(),&dialog);
+    dialog.setFixedSize(260, 140);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    QLabel *label = new QLabel("提醒时间:");
+    label->setStyleSheet("font-size: 13px;");
+
+    QDateTimeEdit *edit = new QDateTimeEdit(QDateTime::currentDateTime(), &dialog);
     edit->setCalendarPopup(true);
+    edit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
+    edit->setFixedHeight(28);
+    edit->setStyleSheet(R"(
+        QDateTimeEdit {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    )");
+
+    QPushButton *okBtn = new QPushButton("确定", &dialog);
+    okBtn->setFixedHeight(30);
+    okBtn->setStyleSheet(R"(
+        QPushButton {
+            background-color: #ff9a9e;
+            border: none;
+            border-radius: 10px;
+            padding: 6px;
+            font-weight: bold;
+            color: white;
+        }
+        QPushButton:hover {
+            background-color: #fbc2eb;
+        }
+    )");
+
+    layout->addWidget(label);
     layout->addWidget(edit);
-
-    QPushButton *okBtn=new QPushButton("确定");
+    layout->addStretch();
     layout->addWidget(okBtn);
-    connect(okBtn,&QPushButton::clicked,&dialog,&QDialog::accept);
+    dialog.setLayout(layout);
 
-    if(dialog.exec()==QDialog::Accepted) {
-        QDateTime time=edit->dateTime();
-        qint64 delay=QDateTime::currentDateTime().msecsTo(time);
-        if(delay>0) {
-            QString text=selectedText;
-            QTimer::singleShot(delay,this,[=]() {
-                QMessageBox::information(listWidget,"定时提醒","提醒内容："+text);
+    // 圆角 + 白底
+    dialog.setStyleSheet(R"(
+        QDialog {
+            background-color: #ffffff;
+            border-radius: 15px;
+        }
+    )");
+
+    connect(okBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QDateTime time = edit->dateTime();
+        qint64 delay = QDateTime::currentDateTime().msecsTo(time);
+        if (delay > 0) {
+            QString text = selectedText;
+            QTimer::singleShot(delay, this, [=]() {
+                QMessageBox *msgBox = new QMessageBox(listWidget);
+                msgBox->setWindowTitle("定时提醒");
+                msgBox->setText("提醒内容：" + text);
+                msgBox->setIcon(QMessageBox::Information);
+                msgBox->setStandardButtons(QMessageBox::Ok);
+                msgBox->setStyleSheet(R"(
+                    QMessageBox {
+                        background-color: #fff3f3;
+                        border-radius: 15px;
+                        padding: 20px;
+                    }
+                    QLabel {
+                        font-size: 14px;
+                        color: #444;
+                    }
+                    QPushButton {
+                        background-color: #ff9a9e;
+                        border: none;
+                        border-radius: 10px;
+                        padding: 8px;
+                        font-weight: bold;
+                        color: white;
+                    }
+                    QPushButton:hover {
+                        background-color: #fbc2eb;
+                    }
+                )");
+                msgBox->exec();
             });
         }
     }
 }
+

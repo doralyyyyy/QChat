@@ -38,7 +38,7 @@ void FriendListPage::setupUI() {
 
     this->setStyleSheet(R"(
     QWidget {
-        background-color: #f0f0f0; /* 页面背景色 */
+        background-color: #f0f0f0;
     }
 
     QListWidget {

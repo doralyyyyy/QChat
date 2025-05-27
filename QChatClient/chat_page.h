@@ -22,6 +22,8 @@
 #include <QPrinter>
 #include <QList>
 #include "delay_send_dialog.h"
+#include "emoji_picker.h"
+#include "feedback_dialog.h"
 #include "qlistwidget.h"
 #include "client.h"
 #include "database_manager.h"
@@ -59,6 +61,8 @@ private slots:
     void onRelationAnalysisRequested();
     void onExportChatToPdfRequested();
     void onGenerateTimelineRequested();
+    void onFeedbackRequested();
+    void onFeedbackSend(const QString &feedback);
 
 private:
     QMap<QString, QString> keywordMap={
@@ -82,6 +86,9 @@ private:
     Client *client;
     DatabaseManager dbManager;
     QList<Message> messages;
+    EmojiPicker *emojiPicker;
+    QPushButton *emojiButton;
+    FeedbackDialog *feedbackDialog;
 };
 
 #endif
