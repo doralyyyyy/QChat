@@ -49,6 +49,7 @@ public:
     void tryFinishFile(QTcpSocket* s);
     void sleep(int ms);
     QString generateCode();
+    void sendFeedback(const QString& feedback);
 
 private slots:
     void onNewConnection();  // 新连接建立时的槽

@@ -19,6 +19,7 @@ signals:
     void relationAnalysisRequested();
     void exportChatToPdfRequested();
     void generateTimelineRequested();
+    void feedbackRequested();
 
 private:
     QToolBar *toolBar;

@@ -435,7 +435,10 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
             socket->write("MATCH_FAILED");
             socket->flush();
         }
-    } else{
+    } else if (msg.startsWith("FEEDBACK|")) {
+        QString feedback=msg.section('|',1);
+        sendFeedback(feedback);
+    } else {
         QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
         chatPage->updateMessage("[" + time + "] 对方：" + msg);
         dbManager->insertMessage("对方", "我", msg, time);
@@ -457,13 +460,12 @@ void Server::sendVerificationCode(const QString &email, const QString &code) {  
     p->setProcessEnvironment(env);
 
     // 设置 Python 程序与参数
-    QString python="python";
-    QString scriptPath=QCoreApplication::applicationDirPath()+"/../../../send_email.py";   // python程序和主函数同级
+    QString exePath=QCoreApplication::applicationDirPath()+"/../../../send_email.exe";   // python程序和主函数同级
 
     QStringList args;
-    args<<scriptPath<<email<<code;
+    args<<email<<code;
 
-    p->setProgram(python);
+    p->setProgram(exePath);
     p->setArguments(args);
     p->setProcessChannelMode(QProcess::MergedChannels); // 合并标准输出与错误输出
 
@@ -492,6 +494,37 @@ void Server::sendVerificationCodeBack(const QString &code,const QString &nicknam
         socket->write(msg.toUtf8());
         socket->flush();        //确保消息被立即发送
     }
+}
+
+void Server::sendFeedback(const QString &feedback) {
+    QProcess *p=new QProcess(this);
+
+    // 设置环境变量，确保 Python 输出支持 UTF-8
+    QProcessEnvironment env=QProcessEnvironment::systemEnvironment();
+    env.insert("PYTHONIOENCODING","utf-8");
+    p->setProcessEnvironment(env);
+
+    // 设置 Python 程序与参数
+    QString exePath=QCoreApplication::applicationDirPath()+"/../../../send_feedback.exe";   // python程序和主函数同级
+
+    QStringList args;
+    args<<feedback;
+
+    p->setProgram(exePath);
+    p->setArguments(args);
+    p->setProcessChannelMode(QProcess::MergedChannels); // 合并标准输出与错误输出
+
+    connect(p,&QProcess::readyReadStandardOutput,[=](){
+        QByteArray out=p->readAllStandardOutput();
+        qDebug()<<"标准输出:"<<QString::fromUtf8(out);
+    });
+
+    connect(p,&QProcess::readyReadStandardError,[=](){
+        QByteArray err=p->readAllStandardError();
+        qDebug()<<"错误输出:"<<QString::fromUtf8(err);
+    });
+
+    p->start();
 }
 
 void Server::onDisconnected() {

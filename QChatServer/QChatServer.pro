@@ -24,7 +24,9 @@ SOURCES += \
     close_confirm_dialog.cpp \
     database_manager.cpp \
     delay_send_dialog.cpp \
+    emoji_picker.cpp \
     feature_menu_widget.cpp \
+    feedback_dialog.cpp \
     file_confirm_dialog.cpp \
     friend_list_page.cpp \
     main.cpp \
@@ -46,7 +48,9 @@ HEADERS += \
     close_confirm_dialog.h \
     database_manager.h \
     delay_send_dialog.h \
+    emoji_picker.h \
     feature_menu_widget.h \
+    feedback_dialog.h \
     file_confirm_dialog.h \
     friend_list_page.h \
     main_window.h \

@@ -3,9 +3,15 @@
         <file>images/default.png</file>
         <file>images/Server.png</file>
         <file>images/icon.png</file>
-        <file>icons/chat_icon.jpg</file>
-        <file>icons/friend_list_icon.jpg</file>
-        <file>icons/match_icon.jpg</file>
-        <file>icons/setting_icon.jpg</file>
+        <file>icons/chat_icon.png</file>
+        <file>icons/friend_list_icon.png</file>
+        <file>icons/match_icon.png</file>
+        <file>icons/pdf.png</file>
+        <file>icons/relation.png</file>
+        <file>icons/setting_icon.png</file>
+        <file>icons/timeline.png</file>
+        <file>icons/wordcloud.png</file>
+        <file>icons/smile_icon.png</file>
+        <file>icons/feedback.png</file>
     </qresource>
 </RCC>

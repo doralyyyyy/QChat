@@ -1,4 +1,6 @@
 #include "chat_page.h"
+#include "emoji_picker.h"
+#include "feedback_dialog.h"
 #include "message_bubble_widget.h"
 #include "feature_menu_widget.h"
 #include "record_dialog.h"
@@ -35,6 +37,33 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
     // 创建输入框和按钮
     inputField = new QLineEdit(this);
     sendButton = new QPushButton("发送", this);
+
+    // 表情包按钮
+    emojiButton = new QPushButton(this);
+    emojiButton->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../../../icons/smile_icon.png"));
+    emojiButton->setIconSize(QSize(28,28));
+    emojiButton->setFixedSize(24, 24);
+    emojiButton->setStyleSheet(R"(
+        QPushButton {
+            border: none;
+            background: transparent;
+        }
+        QPushButton:hover {
+            background:#e0e0e0;
+            border-radius:4px;
+        })");
+    emojiPicker = new EmojiPicker(this);
+    emojiPicker->hide();
+
+    connect(emojiButton, &QPushButton::clicked, this, [=]() {
+        QPoint pos = emojiButton->mapToGlobal(QPoint(0, emojiButton->height()));
+        emojiPicker->move(pos);
+        emojiPicker->show();
+    });
+
+    connect(emojiPicker, &EmojiPicker::emojiSelected, this, [=](const QString &emoji) {
+        inputField->insert(emoji);
+    });
 
     // 创建下拉菜单按钮
     QToolButton *menuButton = new QToolButton(this);
@@ -91,6 +120,7 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
     inputLayout->addWidget(cameraButton);
     inputLayout->addWidget(recordButton);
     inputLayout->addWidget(inputField);
+    inputLayout->addWidget(emojiButton);
     inputLayout->addWidget(sendButton);
     inputLayout->addWidget(menuButton);  // 将菜单按钮添加到布局中
 
@@ -114,6 +144,7 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
     // 创建菜单栏功能区
     FeatureMenuWidget *menuWidget=new FeatureMenuWidget(this);
     QToolBar *toolbar=menuWidget->getToolBar();
+    feedbackDialog=new FeedbackDialog(this);
 
     // 顶部显示对方名字
     chatTitleLabel = new QLabel("", this);
@@ -137,6 +168,8 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
     connect(menuWidget, &FeatureMenuWidget::relationAnalysisRequested, this, &ChatPage::onRelationAnalysisRequested);
     connect(menuWidget, &FeatureMenuWidget::exportChatToPdfRequested, this, &ChatPage::onExportChatToPdfRequested);
     connect(menuWidget, &FeatureMenuWidget::generateTimelineRequested, this, &ChatPage::onGenerateTimelineRequested);
+    connect(menuWidget, &FeatureMenuWidget::feedbackRequested, this, &ChatPage::onFeedbackRequested);
+    connect(feedbackDialog, &FeedbackDialog::feedbackSubmitted, this, &ChatPage::onFeedbackSend);
 
     // 连接控件与槽函数
     connect(inputField, &QLineEdit::returnPressed, this, &ChatPage::onSendButtonClicked);
@@ -173,6 +206,10 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
             border-radius: 12px;
             background: #ffffff;
             font-size: 14px;
+        }
+
+        QLineEdit:focus {
+            border-color: #ff9a9e;
         }
 
         QPushButton {
@@ -569,6 +606,14 @@ void ChatPage::onGenerateTimelineRequested() {
     view->resize(1200, 600);
     view->setWindowTitle("消息时间轴");
     view->show();
+}
+
+void ChatPage::onFeedbackRequested() {
+    feedbackDialog->exec();
+}
+
+void ChatPage::onFeedbackSend(const QString &feedback) {
+    server->sendFeedback(feedback);
 }
 
 void ChatPage::onRecordButtonClicked() {

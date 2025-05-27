@@ -11,6 +11,7 @@
 #include <QNetworkReply>
 #include <QProgressDialog>
 #include <QPointer>
+#include <QLabel>
 
 class MessageContextMenuHandler : public QObject {
     Q_OBJECT
