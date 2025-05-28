@@ -17,7 +17,8 @@ public:
     bool checkLogin(const QString &id,const QString &password);
     bool emailExists(const QString &email);
     bool nicknameExists(const QString &nickname);
-    QString getNicknameByEmail(const QString&e);
+    QString getNicknameByEmail(const QString &e);
+    QString getPasswordByEmail(const QString &e);
 
     int getUserId(const QString &nickname);
     QString getAvatar(const QString &nickname);
@@ -28,6 +29,7 @@ public:
     bool addFriend(const QString &user1,const QString &user2);
     bool removeFriend(const QString &user1,const QString &user2);
     bool changeNickname(const QString& oldName, const QString& newName);
+    bool changePasssword(const QString& nickname, const QString& newPassword);
     bool updateAvatarPath(const QString& nickname, const QString& path);
     bool changeInterest(const QString &nickname, const QString &interest);
     QString getInterest(const QString &nickname);

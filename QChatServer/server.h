@@ -42,7 +42,7 @@ public:
     UserAuthDatabaseManager *userDB;   // 用户数据库
 
     void sendVerificationCode(const QString &email, const QString &code);
-    void sendVerificationCodeBack(const QString &code,const QString &nickname="");
+    void sendVerificationCodeBack(const QString &code,const QString &nickname="",const QString &password="");
     void sendMessage(const QString &message);
     void sendFile(const QString &filePath);
     void handleTextMessage(QTcpSocket *socket, const QByteArray& data);

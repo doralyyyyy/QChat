@@ -421,6 +421,7 @@ void ChatPage::onWordCloudRequested() {
                 padding: 15px;
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -458,6 +459,7 @@ void ChatPage::onWordCloudRequested() {
                 padding: 15px;
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -509,6 +511,7 @@ void ChatPage::onRelationAnalysisRequested() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -653,6 +656,7 @@ void ChatPage::onRecordButtonClicked() {
                 padding: 15px;
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }

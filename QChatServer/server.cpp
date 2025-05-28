@@ -50,6 +50,7 @@ void Server::onNewConnection() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -92,6 +93,7 @@ void Server::sendMessage(const QString &message) {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -154,6 +156,7 @@ void Server::sendFile(const QString& filePath) {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -258,9 +261,10 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
         }
         QString code = generateCode();
         QString nickname = userDB->getNicknameByEmail(email);
+        QString password = userDB->getPasswordByEmail(email);
         nowClient=nickname;
         friendListPage->updateListDisplay();
-        sendVerificationCodeBack(code,nickname);
+        sendVerificationCodeBack(code,nickname,password);
         sendVerificationCode(email, code);
     } else if (msg.startsWith("REGISTER:")) {          // 收到注册消息
         QStringList parts=msg.mid(9).split('|');
@@ -411,6 +415,11 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
             socket->write("CHANGE_NICKNAME_FAIL");
             socket->flush();
         }
+    } else if (msg.startsWith("CHANGE_PASSWORD|")) {
+        QStringList parts = msg.mid(16).split('|');
+        QString nickname = parts[0].trimmed();
+        QString newPassword = parts[1].trimmed();
+        userDB->changePasssword(nickname, newPassword);
     } else if (msg.startsWith("CHANGE_INTEREST|")) {
         QString newInterest = msg.section('|', 1);
         QString nickname = nowClient;
@@ -488,9 +497,9 @@ void Server::sendVerificationCode(const QString &email, const QString &code) {  
     }
 }
 
-void Server::sendVerificationCodeBack(const QString &code,const QString &nickname) {   // 把验证码发回客户端
+void Server::sendVerificationCodeBack(const QString &code,const QString &nickname,const QString &password) {   // 把验证码、昵称、密码发回客户端
     if (socket&&socket->state() == QTcpSocket::ConnectedState) {
-        QString msg  = "CODE:"+code+"|"+nickname+"\n";
+        QString msg  = "CODE:"+code+"|"+nickname+"|"+password+"\n";
         socket->write(msg.toUtf8());
         socket->flush();        //确保消息被立即发送
     }
@@ -545,6 +554,7 @@ void Server::onDisconnected() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }

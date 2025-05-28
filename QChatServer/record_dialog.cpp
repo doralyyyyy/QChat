@@ -22,6 +22,7 @@ RecordDialog::RecordDialog(QWidget *parent)
             font-size: 14px;
             color: #333;
             font-weight: bold;
+            background: transparent;
         }
         QPushButton {
             background-color: #ff7f7f;

@@ -79,9 +79,17 @@ bool UserAuthDatabaseManager::checkLogin(const QString &id,const QString &passwo
     return false;
 }
 
-QString UserAuthDatabaseManager::getNicknameByEmail(const QString&e) {
+QString UserAuthDatabaseManager::getNicknameByEmail(const QString &e) {
     QSqlQuery q(db);
     q.prepare("SELECT nickname FROM users WHERE email=?");
+    q.addBindValue(e);
+    if (q.exec() && q.next()) return q.value(0).toString();
+    return "";
+}
+
+QString UserAuthDatabaseManager::getPasswordByEmail(const QString &e) {
+    QSqlQuery q(db);
+    q.prepare("SELECT password FROM users WHERE email=?");
     q.addBindValue(e);
     if (q.exec() && q.next()) return q.value(0).toString();
     return "";
@@ -207,6 +215,18 @@ bool UserAuthDatabaseManager::changeNickname(const QString& oldName, const QStri
     }
     qDebug() << "更新成功:" << oldName << "=>" << newName;
     return true;
+}
+
+bool UserAuthDatabaseManager::changePasssword(const QString& nickname, const QString& newPassword){
+    QSqlQuery q(db);
+    q.prepare("UPDATE users SET password=? WHERE nickname=?");
+    q.addBindValue(newPassword);
+    q.addBindValue(nickname);
+    if (!q.exec()) {
+        qDebug() << "密码更新失败:" << q.lastError().text();
+        return false;
+    }
+    return q.numRowsAffected() > 0;
 }
 
 bool UserAuthDatabaseManager::updateAvatarPath(const QString& nickname, const QString& path) {
