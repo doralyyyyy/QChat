@@ -11,6 +11,9 @@ CONFIG += c++17
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+RC_FILE = icon.rc
+
 TEMPLATE = app
 
 RESOURCES += \
@@ -29,6 +32,7 @@ SOURCES += \
     feedback_dialog.cpp \
     file_confirm_dialog.cpp \
     friend_list_page.cpp \
+    friend_list_widget.cpp \
     main.cpp \
     main_window.cpp \
     message.cpp \
@@ -53,6 +57,7 @@ HEADERS += \
     feedback_dialog.h \
     file_confirm_dialog.h \
     friend_list_page.h \
+    friend_list_widget.h \
     main_window.h \
     message.h \
     message_bubble_widget.h \

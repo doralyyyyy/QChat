@@ -9,6 +9,7 @@ Server::Server(quint16 port, QObject *parent)
     server = new QTcpServer(this);
     dbManager = new DatabaseManager;
     userDB = new UserAuthDatabaseManager;
+
     if (!server->listen(QHostAddress::Any, port)) {
         qDebug()<<"服务器无法启动";
     }

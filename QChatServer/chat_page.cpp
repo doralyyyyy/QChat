@@ -346,6 +346,7 @@ void ChatPage::onSendButtonClicked() {
     if (!message.isEmpty()) {
         server->sendMessage(message);
         inputField->clear();    // 清空输入框
+
     }
 }
 

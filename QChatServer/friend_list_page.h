@@ -2,6 +2,7 @@
 #define FRIEND_LIST_PAGE_H
 
 #include "qlabel.h"
+#include "friend_list_widget.h"
 #include <QWidget>
 #include <QListWidget>
 #include <QPushButton>
@@ -17,7 +18,7 @@ public:
     void updateListDisplay();
 
     QStringList friendListData;   // 好友列表
-    QListWidget *friendList;
+    FriendListWidget *friendList;
 
 private:
     void setupUI();

@@ -20,7 +20,7 @@ void FriendListPage::setupUI() {
     emptyLabel->setAlignment(Qt::AlignCenter);
     emptyLabel->setStyleSheet("font-size: 35px; color: gray; background: transparent;");
     emptyLabel->hide(); // 默认隐藏
-    friendList = new QListWidget(this);
+    friendList = new FriendListWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(emptyLabel); // 添加到主布局中（在 friendList 前）
     layout->addWidget(friendList);
@@ -150,8 +150,9 @@ void FriendListPage::updateListDisplay() {
         QListWidgetItem *item = new QListWidgetItem(fullText);
         item->setFont(font);
 
-        item->setIcon(QIcon(pix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+        item->setIcon(QIcon(pix.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
         item->setSizeHint(QSize(64, 64));
+        friendList->setItemAvatar(item,path);
 
         friendList->setIconSize(QSize(44, 44));
         friendList->addItem(item);
