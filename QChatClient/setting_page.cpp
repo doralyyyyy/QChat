@@ -107,7 +107,7 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
 
 
 void SettingPage::updateUserInfo() {
-    avatarLabel->setPixmap(client->avatar.scaled(100,100,Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    avatarLabel->setPixmap(client->avatar.scaled(200,200,Qt::KeepAspectRatio,Qt::SmoothTransformation));
     nicknameLabel->setText("昵称：" + client->nickname);
     emailLabel->setText("邮箱：" + client->email);
     passwordLabel->setText("密码："+QString(client->password.length(),QChar(0x25CF)));

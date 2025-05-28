@@ -24,7 +24,7 @@ void FriendListPage::sleep(int ms) {
 }
 
 void FriendListPage::setupUI() {
-    friendList = new QListWidget(this);
+    friendList = new FriendListWidget(this);
     friendList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(friendList, &QListWidget::customContextMenuRequested, this, &FriendListPage::showContextMenu);
 
@@ -176,7 +176,8 @@ void FriendListPage::updateListDisplay() {
             if (!pix.isNull()) {
                 qDebug()<<name+"d";
                 friendList->setIconSize(QSize(44,44));
-                item->setIcon(QIcon(pix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+                item->setIcon(QIcon(pix.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+                friendList->setItemAvatar(item,avatarMap[name]);
             }
         }
         item->setSizeHint(QSize(64, 64));

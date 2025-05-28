@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QSoundEffect>
 #include "database_manager.h"
 
 class MainWindow;

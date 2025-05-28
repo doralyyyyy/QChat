@@ -5,6 +5,7 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QMap>
+#include "friend_list_widget.h"
 
 class Client;
 
@@ -18,7 +19,7 @@ public:
     void addFriend(const QString &nickname);
 
     QStringList friendListData;   // 好友昵称列表
-    QListWidget *friendList;     // 好友列表
+    FriendListWidget *friendList;     // 好友列表
 
 private:
     void setupUI();
