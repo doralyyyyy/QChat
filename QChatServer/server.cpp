@@ -31,7 +31,6 @@ void Server::sleep(int ms) {
     loop.exec();
 }
 
-
 void Server::onNewConnection() {
     socket = server->nextPendingConnection();
     connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);

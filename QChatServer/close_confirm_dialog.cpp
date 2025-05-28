@@ -10,7 +10,7 @@ CloseConfirmDialog::CloseConfirmDialog(QWidget *parent) : QDialog(parent) {
     setFixedSize(300, 180);
 
     QLabel *label = new QLabel("你要退出 QChat 吗？", this);
-    label->setStyleSheet("font-size: 14px; color: #333333;");
+    label->setStyleSheet("font-size: 16px; color: #333333;");
 
     checkBoxDontAsk = new QCheckBox("不再提示", this);
     checkBoxDontAsk->setStyleSheet("font-size: 12px; color: #666666;");
