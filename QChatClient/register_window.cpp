@@ -60,22 +60,15 @@ RegisterWindow::RegisterWindow(Client *client, QWidget *parent) : QWidget(parent
     // 样式
     setStyleSheet(R"(
         QWidget {
-            background-color: #f8f8f8;
             border-radius: 20px;
-            padding: 20px;
-            margin: 0;
         }
 
         QLineEdit {
             padding: 10px;
-            border: 2px solid #ddd;
+            border: 2px solid #ccc;
             border-radius: 12px;
             background: #ffffff;
             font-size: 14px;
-        }
-
-        QLineEdit:focus {
-            border-color: #ff9a9e;
         }
 
         QPushButton {
@@ -92,18 +85,20 @@ RegisterWindow::RegisterWindow(Client *client, QWidget *parent) : QWidget(parent
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
 
-        QPushButton#backButton {
-            color: #007bff;
-            background: transparent;
+        QCheckBox {
+            color: #555;
             font-size: 14px;
-            text-decoration: underline;
         }
 
-        QLabel {
-            font-size: 12px;
-            color: #ff4444;
-            margin-top: 5px;
-            margin-bottom: 5px;
+        QPushButton#registerButton {
+            color: #007bff;
+            background: transparent;
+            text-decoration: underline;
+            font-size: 14px;
+        }
+
+        QHBoxLayout {
+            margin: 5px 0;
         }
     )");
 }
@@ -138,9 +133,10 @@ void RegisterWindow::showMessage(const QString &title, const QString &text) {
             background-color: #fff3f3;
             border-radius: 15px;
             padding: 20px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
         QLabel {
-            background:transparent;
+            background: transparent;
             font-size: 14px;
             color: #ff4444;
         }
