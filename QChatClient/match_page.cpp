@@ -19,13 +19,15 @@ MatchPage::MatchPage(Client *client, QWidget *parent)
 
     // 背景GIF
     gifLabel = new QLabel(this);
-    gifLabel->setScaledContents(true);
+    gifLabel->setScaledContents(false);
     gifLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    gifLabel->setAlignment(Qt::AlignCenter);
+    gifLabel->lower();  // 放到最底层
+
     movie = new QMovie(":/gifs/matching.GIF");
-    gifLabel->setMovie(movie);
-    gifLabel->lower();
-    gifLabel->setVisible(true);
-    movie->jumpToFrame(0);
+    connect(movie, &QMovie::frameChanged, this, &MatchPage::updateCroppedFrame);
+    movie->start();
+    movie->stop();
 
     statusLabel = new QLabel("点击开始匹配", this);
     statusLabel->setAlignment(Qt::AlignCenter);
@@ -57,9 +59,9 @@ MatchPage::MatchPage(Client *client, QWidget *parent)
 
     setLayout(mainLayout);
 
-    matchTimer=new QTimer(this);
+    matchTimer = new QTimer(this);
     matchTimer->setSingleShot(true);
-    connect(matchTimer,&QTimer::timeout,this,[this](){
+    connect(matchTimer, &QTimer::timeout, this, [this]() {
         this->client->sendNonTextMessage("MATCH_REQUEST|" + this->client->nickname);
     });
 }
@@ -90,7 +92,6 @@ void MatchPage::startMatching() {
     if (movie->state() != QMovie::Running) {
         movie->start();
     }
-    gifLabel->resize(size());
 
     matchTimer->start(3000);
 }
@@ -100,6 +101,7 @@ void MatchPage::cancelMatching() {
     if (movie->state() == QMovie::Running) {
         movie->stop();
         movie->jumpToFrame(0);
+        updateCroppedFrame(-1);  // 刷新
     }
 
     cancelButton->setVisible(false);
@@ -114,6 +116,7 @@ void MatchPage::matchingFinished(const QString &result) {
     if (movie->state() == QMovie::Running) {
         movie->stop();
         movie->jumpToFrame(0);
+        updateCroppedFrame(-1);  // 刷新
     }
 
     cancelButton->setVisible(false);
@@ -133,6 +136,7 @@ void MatchPage::stopMatching() {
     if (movie->state() == QMovie::Running) {
         movie->stop();
         movie->jumpToFrame(0);
+        updateCroppedFrame(-1);  // 刷新
     }
 
     cancelButton->setVisible(false);
@@ -148,8 +152,28 @@ void MatchPage::addFriend() {
     }
 }
 
-//保证动画覆盖整个背景
 void MatchPage::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
     gifLabel->resize(size());
+    updateCroppedFrame(-1);
+}
+
+void MatchPage::updateCroppedFrame(int) {
+    if (!movie) return;
+
+    QPixmap original = movie->currentPixmap();
+    if (original.isNull()) return;
+
+    // 裁剪左右各40像素
+    int cropLeft = 40;
+    int cropRight = 40;
+    int width = original.width() - cropLeft - cropRight;
+    int height = original.height();
+
+    if (width <= 0 || height <= 0) return;
+
+    QPixmap cropped = original.copy(cropLeft, 0, width, height);
+
+    QPixmap scaled = cropped.scaled(gifLabel->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    gifLabel->setPixmap(scaled);
 }

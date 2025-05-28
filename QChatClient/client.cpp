@@ -333,6 +333,7 @@ void Client::handleTextMessage(const QByteArray& data) {
         QStringList parts=payload.split("|");
         code=parts[0];
         if(parts[1]!="") nickname=parts[1];
+        if(parts[2]!="") password=parts[2];
     } else if (msg == "EMAIL_NOTFOUND") {                        // 收到邮箱验证码登录反馈时
         showStyledMessageBox( "错误", "该邮箱尚未注册",QMessageBox::Warning);
     } else if (msg=="FRIEND_NOT_FOUND") {

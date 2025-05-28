@@ -44,6 +44,7 @@ public:
     void popMessageBox();
 
     QLabel *chatTitleLabel;
+    QListWidget *listWidget;
 
 protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
@@ -64,7 +65,6 @@ private slots:
     void onFeedbackSend(const QString &feedback);
 
 private:
-    QListWidget *listWidget;
     QLineEdit *inputField;
     QPushButton *cameraButton;
     QPushButton *recordButton;

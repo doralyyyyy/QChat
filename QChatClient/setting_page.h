@@ -16,9 +16,11 @@ public:
     void updateUserInfo();
 
 private slots:
-    void changeNickname();
     void changeAvatar();
+    void changeBackground();
+    void changeNickname();
     void changeInterest();
+    void changePassword();
 
 private:
     Client *client;
@@ -26,10 +28,14 @@ private:
     QLabel *avatarLabel;
     QLabel *nicknameLabel;
     QLabel *emailLabel;
+    QLabel *passwordLabel;
     QLabel *interestLabel;
 
-    QPushButton *changeNicknameButton;
     QPushButton *changeAvatarButton;
+    QPushButton *changeBackgroundButton;
+    QPushButton *changeNicknameButton;
+    QPushButton *changeEmailButton;
+    QPushButton *changePasswordButton;
     QPushButton *changeInterestButton;
 };
 

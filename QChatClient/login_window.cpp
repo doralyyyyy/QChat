@@ -52,6 +52,7 @@ LoginWindow::LoginWindow(Client* client, QWidget *parent) : QWidget(parent), cli
     loadCredentials();
 
     connect(loginButton, &QPushButton::clicked, this, &LoginWindow::onLoginClicked);
+    connect(passwordEdit, &QLineEdit::returnPressed, this, &LoginWindow::onLoginClicked);
     connect(switchLoginMethodButton, &QPushButton::clicked, this, &LoginWindow::onSwitchMethodClicked);
     connect(registerButton, &QPushButton::clicked, this, &LoginWindow::onRegisterClicked);
 
@@ -146,7 +147,6 @@ void LoginWindow::onLoginClicked() {
         msgBox->setIcon(QMessageBox::Warning);
         msgBox->setStandardButtons(QMessageBox::Ok);
 
-        // 修改样式，去掉灰色边框和阴影，使其背景融入
         msgBox->setStyleSheet(R"(
             QMessageBox {
                 background-color: #fff3f3;
@@ -177,6 +177,7 @@ void LoginWindow::onLoginClicked() {
 
     QString msg = "LOGIN:" + id + "|" + pwd;
     client->sendNonTextMessage(msg);
+    client->password=pwd;
 
     if (rememberMeCheckBox->isChecked()) saveCredentials();   // 记忆账号密码信息
     else {

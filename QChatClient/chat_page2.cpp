@@ -20,6 +20,7 @@
 ChatPage2::ChatPage2(Client *client, QWidget *parent)
     : QWidget(parent), client(client) {
     this->setWindowTitle("聊天界面");
+    client->chatPage2=this;
 
     // 创建聊天记录显示区
     listWidget = new QListWidget(this);
@@ -263,6 +264,7 @@ void ChatPage2::popMessageBox(){
             padding: 15px;
         }
         QLabel {
+            background: transparent;
             font-size: 14px;
             color: #ff4444;
         }
@@ -350,6 +352,7 @@ void ChatPage2::onWordCloudRequested() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -387,6 +390,7 @@ void ChatPage2::onWordCloudRequested() {
                 padding: 15px;
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -438,6 +442,7 @@ void ChatPage2::onRelationAnalysisRequested() {
                 box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             }
             QLabel {
+                background: transparent;
                 font-size: 14px;
                 color: #ff4444;
             }
@@ -584,6 +589,7 @@ void ChatPage2::onRecordButtonClicked() {
                     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
                 }
                 QLabel {
+                    background: transparent;
                     font-size: 14px;
                     color: #ff4444;
                 }

@@ -18,6 +18,7 @@ class RegisterWindow;
 class LoginWindow;
 class EmailLoginWindow;
 class ChatPage;
+class ChatPage2;
 class FriendListPage;
 class MatchPage;
 class SettingPage;
@@ -43,12 +44,14 @@ public:
     EmailLoginWindow *emailLoginWindow;
     LoginWindow *loginWindow;
     ChatPage *chatPage;
+    ChatPage2 *chatPage2;
     FriendListPage *friendListPage;
     MatchPage *matchPage;
     SettingPage *settingPage;
     QString nickname;
     QString newNickname;
     QString email;
+    QString password;
     QPixmap avatar;
     QString interest;
     QTcpSocket *socket;  // 与服务端的连接

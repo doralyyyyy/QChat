@@ -14,7 +14,7 @@ class MatchPage : public QWidget {
 
 public:
     explicit MatchPage(Client *client, QWidget *parent = nullptr);
-
+    void updateCroppedFrame(int frameNumber);
     void sleep(int ms);
     void stopMatching();
     void matchingFinished(const QString& result);

@@ -1,5 +1,6 @@
 #include "setting_page.h"
 #include "avatar_cropper.h"
+#include "background_setting_dialog.h"
 #include "qregularexpression.h"
 #include <QFileDialog>
 #include <QInputDialog>
@@ -26,16 +27,14 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
             padding: 10px;
             border: none;
             border-radius: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #ff9a9e, stop:1 #fad0c4);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff9a9e, stop:1 #fad0c4);
             color: white;
             font-size: 16px;
             font-weight: bold;
         }
 
         QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #fbc2eb, stop:1 #a6c1ee);
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #fbc2eb, stop:1 #a6c1ee);
         }
     )");
 
@@ -56,6 +55,8 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
     avatarLabel->setScaledContents(true);
     changeAvatarButton = new QPushButton("修改头像", this);
 
+    changeBackgroundButton = new QPushButton("修改聊天背景", this);
+
     QHBoxLayout *nicknameLayout = new QHBoxLayout;
     nicknameLabel = new QLabel("昵称：", this);
     changeNicknameButton = new QPushButton("修改昵称", this);
@@ -63,7 +64,21 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
     nicknameLayout->addStretch();
     nicknameLayout->addWidget(changeNicknameButton);
 
+    QHBoxLayout *emailLayout = new QHBoxLayout;
     emailLabel = new QLabel("邮箱：", this);
+    changeEmailButton = new QPushButton("修改邮箱", this);
+    changeEmailButton->setStyleSheet("background: transparent; border: none; color: transparent;");
+    changeEmailButton->setEnabled(false);
+    emailLayout->addWidget(emailLabel);
+    emailLayout->addStretch();
+    emailLayout->addWidget(changeEmailButton);
+
+    QHBoxLayout *passwordLayout = new QHBoxLayout;
+    passwordLabel = new QLabel("密码：", this);
+    changePasswordButton = new QPushButton("修改密码", this);
+    passwordLayout->addWidget(passwordLabel);
+    passwordLayout->addStretch();
+    passwordLayout->addWidget(changePasswordButton);
 
     QHBoxLayout *interestLayout = new QHBoxLayout;
     interestLabel = new QLabel("兴趣：未设置",this);
@@ -73,14 +88,17 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
     interestLayout->addWidget(changeInterestButton);
 
     connect(changeAvatarButton, &QPushButton::clicked, this, &SettingPage::changeAvatar);
+    connect(changeBackgroundButton, &QPushButton::clicked, this, &SettingPage::changeBackground);
     connect(changeNicknameButton, &QPushButton::clicked, this, &SettingPage::changeNickname);
+    connect(changePasswordButton, &QPushButton::clicked, this, &SettingPage::changePassword);
     connect(changeInterestButton, &QPushButton::clicked, this, &SettingPage::changeInterest);
 
     layout->addWidget(avatarLabel, 0, Qt::AlignCenter);
     layout->addWidget(changeAvatarButton, 0, Qt::AlignCenter);
-    layout->addSpacing(10);
+    layout->addWidget(changeBackgroundButton, 0, Qt::AlignCenter);
     layout->addLayout(nicknameLayout);
-    layout->addWidget(emailLabel);
+    layout->addLayout(emailLayout);
+    layout->addLayout(passwordLayout);
     layout->addLayout(interestLayout);
 
     setLayout(layout);
@@ -89,19 +107,11 @@ SettingPage::SettingPage(Client *client, QWidget *parent)
 
 
 void SettingPage::updateUserInfo() {
+    avatarLabel->setPixmap(client->avatar.scaled(100,100,Qt::KeepAspectRatio,Qt::SmoothTransformation));
     nicknameLabel->setText("昵称：" + client->nickname);
     emailLabel->setText("邮箱：" + client->email);
-    avatarLabel->setPixmap(client->avatar.scaled(100,100,Qt::KeepAspectRatio,Qt::SmoothTransformation));
+    passwordLabel->setText("密码："+QString(client->password.length(),QChar(0x25CF)));
     interestLabel->setText("兴趣："+((client->interest=="")?"未设置":client->interest));
-}
-
-void SettingPage::changeNickname() {
-    bool ok;
-    QString newName=QInputDialog::getText(this,"修改昵称","输入新昵称",QLineEdit::Normal,"",&ok);
-    if(ok && !newName.isEmpty()) {
-        client->sendNonTextMessage("CHANGE_NICKNAME|"+client->nickname+"|"+newName);
-        client->newNickname=newName;
-    }
 }
 
 void SettingPage::changeAvatar() {
@@ -158,6 +168,30 @@ void SettingPage::changeAvatar() {
             }
             updateUserInfo();
         }
+    }
+}
+
+void SettingPage::changeBackground() {
+    BackgroundSettingDialog dlg(client,this);
+    dlg.exec();
+}
+
+void SettingPage::changeNickname() {
+    bool ok;
+    QString newName=QInputDialog::getText(this,"修改昵称","输入新昵称",QLineEdit::Normal,"",&ok);
+    if(ok && !newName.isEmpty()) {
+        client->sendNonTextMessage("CHANGE_NICKNAME|"+client->nickname+"|"+newName);
+        client->newNickname=newName;
+    }
+}
+
+void SettingPage::changePassword() {
+    bool ok;
+    QString newPassword=QInputDialog::getText(this,"修改密码","输入新密码",QLineEdit::Password,"",&ok);
+    if(ok && !newPassword.isEmpty()) {
+        client->sendNonTextMessage("CHANGE_PASSWORD|"+client->nickname+"|"+newPassword);
+        client->password=newPassword;
+        updateUserInfo();
     }
 }
 

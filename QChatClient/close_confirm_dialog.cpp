@@ -26,6 +26,7 @@ CloseConfirmDialog::CloseConfirmDialog(QWidget *parent) : QDialog(parent) {
             border-radius: 10px;
             padding: 6px 12px;
             font-weight: bold;
+            font-size: 14px;
             color: white;
         }
         QPushButton:hover {

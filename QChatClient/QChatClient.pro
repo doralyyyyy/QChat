@@ -16,6 +16,7 @@ TEMPLATE = app
 
 SOURCES += \
     avatar_cropper.cpp \
+    background_setting_dialog.cpp \
     camera.cpp \
     chat_page.cpp \
     chat_page2.cpp \
@@ -44,6 +45,7 @@ SOURCES += \
 
 HEADERS += \
     avatar_cropper.h \
+    background_setting_dialog.h \
     camera.h \
     chat_page.h \
     chat_page2.h \

@@ -45,6 +45,7 @@ public:
     void showEmojiAnimation(const QString &emoji);
 
     QLabel *chatTitleLabel;
+    QListWidget *listWidget;
 
 protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
@@ -73,7 +74,6 @@ private:
         {"亲亲","😘"},{"么么哒","😘"},{"心碎","💔"},{"震惊","😱"},{"我晕","😵"},{"晕了","😵"},{"睡觉","🛌"},{"再见","👋"},{"拜拜","👋"}
     };
     bool ifinit;
-    QListWidget *listWidget;
     QLineEdit *inputField;
     QPushButton *cameraButton;
     QPushButton *recordButton;

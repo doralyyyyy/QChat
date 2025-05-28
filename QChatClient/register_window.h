@@ -40,6 +40,7 @@ private slots:
     void onVerifyClicked();
     void checkPasswordsMatch();
     void onBackToLoginClicked();
+    void showMessage(const QString &title, const QString &text);
 };
 
 #endif
