@@ -72,7 +72,8 @@ void BackgroundSettingDialog::applyBackground() {
     QString style=QString(R"(
         QListWidget {
             background-image: url(%1);
-            background-repeat: no-repeat;
+            background-repeat: repeat;
+            background-attachment: scroll;
             background-position: center;
             background-size: cover;
             border-radius: 10px;

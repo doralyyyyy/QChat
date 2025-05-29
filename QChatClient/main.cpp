@@ -24,5 +24,9 @@ int main(int argc,char *argv[]) {
         l->show();
     });
 
+    // 清除关闭记忆（正常应被注释掉）
+    // QSettings s("MyCompany", "QChat");
+    // s.remove("close_behavior");
+
     return a.exec();
 }
