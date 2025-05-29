@@ -6,11 +6,11 @@ TrayManager::TrayManager(QWidget *mainWindow, QObject *parent)
     : QObject(parent), mainWindow(mainWindow) {
     trayIcon = new QSystemTrayIcon(mainWindow);
     trayIcon->setIcon(QIcon(QCoreApplication::applicationDirPath() + "/../../../images/icon.png"));
-    trayIcon->setToolTip("QChat 正在后台运行");
+    trayIcon->setToolTip("QChatServer 正在后台运行");
 
     trayMenu = new QMenu();
 
-    QAction *showAction = new QAction("打开 QChat");
+    QAction *showAction = new QAction("打开 QChatServer");
     QAction *exitAction = new QAction("退出");
 
     connect(showAction, &QAction::triggered, this, &TrayManager::onShowWindow);

@@ -192,10 +192,12 @@ void MessageContextMenuHandler::remindMessage() {
                         background-color: #fff3f3;
                         border-radius: 15px;
                         padding: 20px;
+                        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
                     }
                     QLabel {
+                        background: transparent;
                         font-size: 14px;
-                        color: #444;
+                        color: #ff4444;
                     }
                     QPushButton {
                         background-color: #ff9a9e;

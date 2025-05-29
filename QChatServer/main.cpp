@@ -1,4 +1,5 @@
 #include "main_window.h"
+#include "qsettings.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -9,6 +10,10 @@ int main(int argc, char *argv[])
 
     MainWindow w(server);
     w.show();
+
+    // 清除关闭记忆（正常应被注释掉）
+    // QSettings s("MyCompany", "QChat");
+    // s.remove("close_behavior");
 
     return a.exec();
 }

@@ -137,10 +137,6 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
     // 设置右键菜单
     contextMenu=new MessageContextMenuHandler(listWidget,this);
 
-    // 清除关闭记忆（正常应被注释掉）
-    // QSettings s("MyCompany", "QChat");
-    // s.remove("close_behavior");
-
     // 创建菜单栏功能区
     FeatureMenuWidget *menuWidget=new FeatureMenuWidget(this);
     QToolBar *toolbar=menuWidget->getToolBar();

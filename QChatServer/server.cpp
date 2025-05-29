@@ -67,7 +67,7 @@ void Server::onNewConnection() {
             }
         )");
 
-    msgBox->exec();
+    //msgBox->exec();
 }
 
 
@@ -571,6 +571,6 @@ void Server::onDisconnected() {
             }
         )");
 
-    msgBox->exec();
+    //msgBox->exec();
     socket->deleteLater();
 }
