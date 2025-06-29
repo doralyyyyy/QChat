@@ -1,0 +1,6 @@
+jieba
+wordcloud
+matplotlib
+vosk
+pydub
+email.mime.text
