@@ -35,7 +35,7 @@ https://disk.pku.edu.cn/link/AA1BD702504FDF4F1981E0B7CC62983863
 
 "f3168b1198c3a661.natapp.cc"
 
-*注：开发者目前仅购买了10GB的流量限额，请小心使用*
+*注：由于流量有限额，请小心使用*
 
 ### 四、运行
 请先运行QChatServer，再运行QChatClient
