@@ -503,7 +503,7 @@ void Server::sendVerificationCode(const QString &email, const QString &code) {  
     if (!p->waitForStarted()) {
         qDebug()<<"Python 子进程启动失败";
     } else {
-        qDebug()<<"验证码已尝试发送至"<<email<<"，内容为"<<code;
+        // qDebug()<<"验证码已尝试发送至"<<email<<"，内容为"<<code;
     }
 }
 
