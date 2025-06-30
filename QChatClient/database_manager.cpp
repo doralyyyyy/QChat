@@ -2,7 +2,7 @@
 
 DatabaseManager::DatabaseManager(const QString &user) {
     QString safeUser = user;
-    safeUser.replace("@","_at_").replace(".","_dot_").replace("/","_slash");
+    safeUser.replace("@","_at_").replace(".","_dot_").replace("/","_slash_");
     QString connectionName = safeUser + "_ChatConnection";
 
     if (QSqlDatabase::contains(connectionName)) {    // 确保只创建一个连接
