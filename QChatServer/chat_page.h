@@ -39,6 +39,7 @@ public:
     ChatPage(Server *server, QWidget *parent = nullptr);
     ~ChatPage();
 
+    void initMessage();
     void updateMessage(const QString &message);
     void exportChatToTxt();
     void refresh();

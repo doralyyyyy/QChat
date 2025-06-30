@@ -39,6 +39,7 @@ public:
     FriendListPage *friendListPage;
     QString nowClient;
     QString nowEmail;
+    bool nowChange;
     QTcpSocket *socket;       // 与客户端的连接
     UserAuthDatabaseManager *userDB;   // 用户数据库
 

@@ -181,13 +181,6 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
 
     setAcceptDrops(true);
 
-    // 加载聊天记录
-    ifinit=0;
-    QVector<QString> msgs = dbManager.loadMessages();
-    for (const QString &line : std::as_const(msgs))
-        updateMessage(line);
-    ifinit=1;
-
     // 设置界面样式
     setStyleSheet(R"(
         QWidget {
@@ -262,6 +255,19 @@ ChatPage::ChatPage(Server *server, QWidget *parent)
             margin: 5px 0;
         }
     )");
+}
+
+void ChatPage::initMessage() {
+    // 加载聊天记录
+    if (server->nowChange) {
+        ifinit=0;
+        listWidget->clear();
+        QVector<QString> msgs = dbManager.loadMessages(server->nowEmail);
+        for (const QString &line : std::as_const(msgs))
+            updateMessage(line);
+        ifinit=1;
+    }
+    server->nowChange = false;
 }
 
 void ChatPage::updateMessage(const QString &msg) {

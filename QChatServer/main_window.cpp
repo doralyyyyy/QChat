@@ -95,13 +95,14 @@ void MainWindow::sleep(int ms) {
 }
 
 void MainWindow::showChatPage() {
-    if(chatPartner==""){
+    if(chatPartner == "") {
         QMessageBox::critical(this,"错误","请选择聊天对象");
-    }else if(chatPartner==server->nowClient){
+    } else if(chatPartner == server->nowClient) {
         chatPage->refresh();
         stackedWidget->setCurrentWidget(chatPage);
+        chatPage->initMessage();
         chatPage->chatTitleLabel->setText(chatPartner);
-    }else{
+    } else {
         stackedWidget->setCurrentWidget(chatPage2);
         chatPage2->chatTitleLabel->setText(chatPartner);
     }

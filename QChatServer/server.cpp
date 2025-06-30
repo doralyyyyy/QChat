@@ -9,6 +9,7 @@ Server::Server(quint16 port, QObject *parent)
     server = new QTcpServer(this);
     userDB = new UserAuthDatabaseManager;
     dbManager = new DatabaseManager;
+    nowEmail="";
 
     if (!server->listen(QHostAddress::Any, port)) {
         qDebug()<<"服务器无法启动";
@@ -77,7 +78,7 @@ void Server::sendMessage(const QString &message) {
         socket->write(message.toUtf8());
         socket->flush();        //确保消息被立即发送
         chatPage->updateMessage("["+time+"] 我："+message);   //显示自己发的消息
-        dbManager->insertMessage("我","对方",message,time);  //数据存入数据库
+        dbManager->insertMessage(nowEmail,"我","对方",message,time);  //数据存入数据库
     } else {
         QMessageBox *msgBox = new QMessageBox(nullptr);
         msgBox->setWindowTitle("提示");
@@ -136,7 +137,7 @@ void Server::sendFile(const QString& filePath) {
                 QString content="FILE|"+filename;
                 QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
                 chatPage->updateMessage("[" + time + "] 我：" + content);
-                dbManager->insertMessage("我","对方",content,time);     // 标记为文件后存入数据库
+                dbManager->insertMessage(nowEmail,"我","对方",content,time);     // 标记为文件后存入数据库
             } else {
                 chatPage->updateMessage("文件保存失败：" + filename);
             }
@@ -234,7 +235,7 @@ void Server::tryFinishFile(QTcpSocket* s) {
                 QString content="FILE|"+f.name;
                 QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
                 chatPage->updateMessage("[" + time + "] 对方：" + content);
-                dbManager->insertMessage("对方","我",content,time);
+                dbManager->insertMessage(nowEmail,"对方","我",content,time);
                 qDebug()<<"收到普通文件："<<f.name;
             }
         } else {
@@ -259,11 +260,13 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
             socket->flush();
             return;
         }
-        nowEmail=email;
         QString code = generateCode();
         QString nickname = userDB->getNicknameByEmail(email);
         QString password = userDB->getPasswordByEmail(email);
         nowClient=nickname;
+        if (nowEmail!=email) nowChange = true;
+        nowEmail=email;
+        dbManager->init(nowEmail);
         friendListPage->updateListDisplay();
         sendVerificationCodeBack(code,nickname,password);
         sendVerificationCode(email, code);
@@ -284,7 +287,9 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
             socket->write("REGISTER_OK");
             socket->flush();
             nowClient=nick;
+            if (nowEmail!=email) nowChange = true;
             nowEmail=email;
+            dbManager->init(nowEmail);
             friendListPage->updateListDisplay();
         } else {
             socket->write("REGISTER_FAIL");
@@ -311,7 +316,9 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
                 socket->write(reply.toUtf8());
                 socket->flush();
                 nowClient=nickname;
+                if (nowEmail!=email) nowChange = true;
                 nowEmail=email;
+                dbManager->init(nowEmail);
                 friendListPage->updateListDisplay();
             } else {
                 socket->write("LOGIN_FAIL");
@@ -453,7 +460,7 @@ void Server::handleTextMessage(QTcpSocket* socket, const QByteArray& data) {
     } else {
         QString time=QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
         chatPage->updateMessage("[" + time + "] 对方：" + msg);
-        dbManager->insertMessage("对方", "我", msg, time);
+        dbManager->insertMessage(nowEmail,"对方", "我", msg, time);
     }
 }
 

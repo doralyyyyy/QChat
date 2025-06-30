@@ -12,14 +12,15 @@ class DatabaseManager {
 public:
     explicit DatabaseManager();
 
-    void insertMessage(const QString &sender,const QString &receiver,const QString &message,const QString &timestamp);
+    void init(const QString &tableName);
+    QString emailToTable(const QString &email);
+    void insertMessage(const QString &tableName,const QString &sender,const QString &receiver,const QString &message,const QString &timestamp);
+    QVector<QString> loadMessages(const QString &tableName);
     void closeDatabase();
-    QVector<QString> loadMessages();
 
 private:
     QSqlDatabase db;
 
-    void init();
 };
 
 #endif
