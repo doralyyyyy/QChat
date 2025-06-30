@@ -51,6 +51,10 @@ EmailLoginWindow::EmailLoginWindow(Client *client, QWidget *parent) : QWidget(pa
             font-size: 14px;
         }
 
+        QLineEdit:focus {
+            border-color: #ff9a9e;
+        }
+
         QPushButton {
             padding: 10px;
             border: none;
