@@ -312,7 +312,7 @@ void Client::showStyledMessageBox(const QString& title, const QString& text, QMe
 
 void Client::handleTextMessage(const QByteArray& data) {
     QString msg = QString::fromUtf8(data).trimmed();
-    qDebug()<<msg;
+    // qDebug()<<msg;
     if (msg=="REGISTER_OK") {                              // 收到注册反馈时
         registerSuccess();
     } else if (msg=="REGISTER_FAIL") {
